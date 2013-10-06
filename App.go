@@ -25,7 +25,12 @@ func (app App) Get(url string, handler handlerFunc) {
 		res := &Response{}
 		handler(req, res)
 
-		t, _ := template.ParseFiles(app.settings.ViewPath + "/" + res.ViewName + ".html")
+		viewPath := app.settings.ViewPath
+		if viewPath == "" {
+			viewPath = "."
+		}
+
+		t, _ := template.ParseFiles(viewPath + "/" + res.ViewName + ".html")
 		t.Execute(w, res.Model)
 	})
 }
