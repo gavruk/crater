@@ -8,8 +8,8 @@ type Request struct {
 // GetString returns query param as string
 // GetString return empty string if param not found
 func (req *Request) GetString(name string) (string, bool) {
-	if valueByName, exists := req.params[name]; exists {
-		return valueByName[0], true
+	if value, exists := req.params[name]; exists {
+		return value[0], true
 	}
 	return "", false
 }
@@ -17,8 +17,8 @@ func (req *Request) GetString(name string) (string, bool) {
 // GetArray returns query param as array
 // GetArray return empty array if param not found
 func (req *Request) GetArray(name string) ([]string, bool) {
-	if valueByName, exists := req.params[name]; exists {
-		return valueByName, true
+	if value, exists := req.params[name]; exists {
+		return value, true
 	}
 	return make([]string, 0), false
 }
