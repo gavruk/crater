@@ -21,7 +21,11 @@ func (app *App) Settings(settings Settings) {
 // Get handles GET requests
 func (app App) Get(url string, handler handlerFunc) {
 	craterRequestHandler.Handle(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
+
 		req := &Request{}
+		r.ParseForm()
+		req.Params = r.Form
+
 		res := &Response{}
 		handler(req, res)
 
