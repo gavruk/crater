@@ -24,7 +24,7 @@ func (app App) Get(url string, handler handlerFunc) {
 
 		req := &Request{}
 		r.ParseForm()
-		req.Params = r.Form
+		req.params = r.Form
 
 		res := &Response{}
 		handler(req, res)
