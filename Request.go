@@ -1,6 +1,7 @@
 package crater
 
 import (
+	"github.com/gavruk/forp"
 	"strings"
 )
 
@@ -39,4 +40,9 @@ func (req *Request) GetArray(name string) ([]string, bool) {
 		return value, true
 	}
 	return make([]string, 0), false
+}
+
+func (req *Request) Parse(s interface{}) error {
+	decoder := forp.Decoder{}
+	return decoder.Decode(s, req.params)
 }
