@@ -2,5 +2,6 @@ package crater
 
 // Settings for you app
 type Settings struct {
-	ViewPath string
+	ViewsPath       string
+	StaticFilesPath string
 }

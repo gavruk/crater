@@ -18,6 +18,10 @@ func (h *regexpHandler) Handle(pattern *regexp.Regexp, handler func(http.Respons
 	h.routes = append(h.routes, &route{pattern, http.HandlerFunc(handler)})
 }
 
+func (h *regexpHandler) HandleStatic(pattern *regexp.Regexp, url string, fs http.FileSystem) {
+	h.routes = append(h.routes, &route{pattern, http.StripPrefix(url, http.FileServer(fs))})
+}
+
 func (h *regexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, route := range h.routes {
 		if route.pattern.MatchString(r.URL.Path) {

@@ -16,6 +16,13 @@ type App struct {
 // Settings recieves settings application
 func (app *App) Settings(settings Settings) {
 	app.settings = settings
+
+	if app.settings.ViewsPath == "" {
+		app.settings.ViewsPath = "."
+	}
+	if app.settings.StaticFilesPath == "" {
+		app.settings.StaticFilesPath = "."
+	}
 }
 
 // Get handles GET requests
@@ -28,12 +35,11 @@ func (app App) Get(url string, handler handlerFunc) {
 		res := &Response{}
 		handler(req, res)
 
-		viewPath := app.settings.ViewPath
-		if viewPath == "" {
-			viewPath = "."
-		}
-
-		t, _ := template.ParseFiles(viewPath + "/" + res.ViewName + ".html")
+		t, _ := template.ParseFiles(app.settings.ViewsPath + "/" + res.ViewName + ".html")
 		t.Execute(w, res.Model)
 	})
+}
+
+func (app App) HandleStaticFiles(url string) {
+	craterRequestHandler.HandleStatic(regexp.MustCompile("^"+url), url, http.Dir(app.settings.StaticFilesPath))
 }
