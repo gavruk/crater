@@ -23,8 +23,7 @@ func (app App) Get(url string, handler handlerFunc) {
 	craterRequestHandler.Handle(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 
 		req := &Request{}
-		r.ParseForm()
-		req.params = r.Form
+		req.httpRequest = r
 
 		res := &Response{}
 		handler(req, res)
