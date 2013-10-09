@@ -1,6 +1,7 @@
 package crater
 
 import (
+	"encoding/json"
 	"github.com/gavruk/forp"
 	"net/http"
 	"strings"
@@ -54,11 +55,17 @@ func (req *Request) GetArray(name string) ([]string, bool) {
 }
 
 func (req *Request) Parse(s interface{}) error {
-	if !req.isFormParsed {
-		req.parseForm()
+	ct := req.httpRequest.Header.Get("Content-Type")
+	if ct == "application/json" {
+		jsonDecoder := json.NewDecoder(req.httpRequest.Body)
+		return jsonDecoder.Decode(s)
+	} else {
+		if !req.isFormParsed {
+			req.parseForm()
+		}
+		decoder := forp.Decoder{}
+		return decoder.Decode(s, req.params)
 	}
-	decoder := forp.Decoder{}
-	return decoder.Decode(s, req.params)
 }
 
 func (req *Request) parseForm() error {

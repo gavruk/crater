@@ -27,7 +27,21 @@ func (app *App) Settings(settings Settings) {
 
 // Get handles GET requests
 func (app App) Get(url string, handler handlerFunc) {
-	craterRequestHandler.Handle(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
+	craterRequestHandler.HandleGet(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
+
+		req := &Request{}
+		req.httpRequest = r
+
+		res := &Response{}
+		handler(req, res)
+		t, _ := template.ParseFiles(app.settings.ViewsPath + "/" + res.ViewName + ".html")
+		t.Execute(w, res.Model)
+	})
+}
+
+// Post handles POST requests
+func (app App) Post(url string, handler handlerFunc) {
+	craterRequestHandler.HandlePost(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 
 		req := &Request{}
 		req.httpRequest = r
