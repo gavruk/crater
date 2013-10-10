@@ -3,8 +3,10 @@ package crater
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gavruk/checker"
 	"html/template"
 	"net/http"
+	"path"
 	"regexp"
 )
 
@@ -36,8 +38,8 @@ func (app App) Get(url string, handler handlerFunc) {
 
 		res := &Response{}
 		handler(req, res)
-		t, _ := template.ParseFiles(app.settings.ViewsPath + "/" + res.ViewName + ".html")
-		t.Execute(w, res.Model)
+
+		app.sendTemplate(w, res.model, res.viewName)
 	})
 }
 
@@ -50,19 +52,28 @@ func (app App) Post(url string, handler handlerFunc) {
 
 		res := &Response{}
 		handler(req, res)
+
 		if res.isJson {
-			if res.Model != nil {
-				w.Header().Set("Content-Type", ct_JSON)
-				jsonObj, _ := json.Marshal(res.Model)
-				fmt.Fprint(w, string(jsonObj))
-			}
+			app.sendJson(w, res.model)
 		} else {
-			t, _ := template.ParseFiles(app.settings.ViewsPath + "/" + res.ViewName + ".html")
-			t.Execute(w, res.Model)
+			app.sendTemplate(w, res.model, res.viewName)
 		}
 	})
 }
 
 func (app App) HandleStaticFiles(url string) {
 	craterRequestHandler.HandleStatic(regexp.MustCompile("^"+url), url, http.Dir(app.settings.StaticFilesPath))
+}
+
+func (app App) sendJson(w http.ResponseWriter, model interface{}) {
+	w.Header().Set("Content-Type", ct_JSON)
+	jsonObj, _ := json.Marshal(model)
+	fmt.Fprint(w, string(jsonObj))
+}
+
+func (app App) sendTemplate(w http.ResponseWriter, model interface{}, viewName string) {
+	checker.Require(viewName != "", "crater: ViewName cannot be empty string")
+
+	t, _ := template.ParseFiles(path.Join(app.settings.ViewsPath, viewName+".html"))
+	t.Execute(w, model)
 }
