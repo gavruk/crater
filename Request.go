@@ -56,7 +56,7 @@ func (req *Request) GetArray(name string) ([]string, bool) {
 
 func (req *Request) Parse(s interface{}) error {
 	ct := req.httpRequest.Header.Get("Content-Type")
-	if ct == "application/json" {
+	if ct == ct_JSON {
 		jsonDecoder := json.NewDecoder(req.httpRequest.Body)
 		return jsonDecoder.Decode(s)
 	} else {

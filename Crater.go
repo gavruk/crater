@@ -5,6 +5,13 @@ import (
 	"regexp"
 )
 
+//
+const (
+	method_GET  = "GET"
+	method_POST = "POST"
+	ct_JSON     = "application/json"
+)
+
 type route struct {
 	pattern      *regexp.Regexp
 	routeHandler http.Handler
@@ -30,9 +37,9 @@ func (h *regexpHandler) HandleStatic(pattern *regexp.Regexp, url string, fs http
 func (h *regexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var routes []*route
 	switch r.Method {
-	case "GET":
+	case method_GET:
 		routes = h.getRoutes
-	case "POST":
+	case method_POST:
 		routes = h.postRoutes
 	}
 	for _, route := range routes {

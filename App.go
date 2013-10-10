@@ -1,6 +1,8 @@
 package crater
 
 import (
+	"encoding/json"
+	"fmt"
 	"html/template"
 	"net/http"
 	"regexp"
@@ -48,9 +50,16 @@ func (app App) Post(url string, handler handlerFunc) {
 
 		res := &Response{}
 		handler(req, res)
-
-		t, _ := template.ParseFiles(app.settings.ViewsPath + "/" + res.ViewName + ".html")
-		t.Execute(w, res.Model)
+		if res.isJson {
+			if res.Model != nil {
+				w.Header().Set("Content-Type", ct_JSON)
+				jsonObj, _ := json.Marshal(res.Model)
+				fmt.Fprint(w, string(jsonObj))
+			}
+		} else {
+			t, _ := template.ParseFiles(app.settings.ViewsPath + "/" + res.ViewName + ".html")
+			t.Execute(w, res.Model)
+		}
 	})
 }
 
