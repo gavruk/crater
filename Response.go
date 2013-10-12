@@ -10,8 +10,8 @@ type Response struct {
 }
 
 // Render renders html with model
-func (res *Response) Render(html string, model interface{}) {
-	res.viewName = html
+func (res *Response) Render(viewName string, model interface{}) {
+	res.viewName = viewName
 	res.model = model
 }
 
@@ -21,6 +21,7 @@ func (res *Response) Json(model interface{}) {
 	res.isJson = true
 }
 
+// Redirect redirects to url
 func (res *Response) Redirect(url string) {
 	res.redirectUrl = url
 	res.isRedirect = true
