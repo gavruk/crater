@@ -1,6 +1,7 @@
 package crater
 
 import (
+	"github.com/gavruk/schema"
 	"net/http"
 	"regexp"
 )
@@ -60,3 +61,5 @@ func (h *regexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 var craterRequestHandler = &regexpHandler{}
+
+var schemaDecoder = schema.NewDecoder()

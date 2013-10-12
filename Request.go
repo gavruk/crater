@@ -2,7 +2,6 @@ package crater
 
 import (
 	"encoding/json"
-	"github.com/gavruk/forp"
 	"net/http"
 	"strings"
 )
@@ -63,8 +62,7 @@ func (req *Request) Parse(s interface{}) error {
 		if !req.isFormParsed {
 			req.parseForm()
 		}
-		decoder := forp.Decoder{}
-		return decoder.Decode(s, req.params)
+		return schemaDecoder.Decode(s, req.params)
 	}
 }
 
