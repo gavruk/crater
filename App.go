@@ -32,12 +32,16 @@ func (app *App) Settings(settings Settings) {
 // Get handles GET requests
 func (app App) Get(url string, handler handlerFunc) {
 	craterRequestHandler.HandleGet(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
-
 		req := &Request{}
 		req.httpRequest = r
 
 		res := &Response{}
 		handler(req, res)
+
+		if res.isRedirect {
+			app.redirect(w, r, res.redirectUrl)
+			return
+		}
 
 		app.sendTemplate(w, res.model, res.viewName)
 	})
@@ -76,4 +80,10 @@ func (app App) sendTemplate(w http.ResponseWriter, model interface{}, viewName s
 
 	t, _ := template.ParseFiles(path.Join(app.settings.ViewsPath, viewName+".html"))
 	t.Execute(w, model)
+}
+
+func (app App) redirect(w http.ResponseWriter, r *http.Request, url string) {
+	checker.Require(url != "", "crater: RedirectUrl cannot be empty string")
+
+	http.Redirect(w, r, url, 301)
 }

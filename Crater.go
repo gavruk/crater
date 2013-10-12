@@ -42,8 +42,15 @@ func (h *regexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case method_POST:
 		routes = h.postRoutes
 	}
+	urlPath := r.URL.Path
+	if urlPath == "" {
+		http.NotFound(w, r)
+	}
+	if urlPath[0] != '/' {
+		urlPath = "/" + urlPath
+	}
 	for _, route := range routes {
-		if route.pattern.MatchString(r.URL.Path) {
+		if route.pattern.MatchString(urlPath) {
 			route.routeHandler.ServeHTTP(w, r)
 			return
 		}
