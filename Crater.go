@@ -6,7 +6,6 @@ import (
 	"regexp"
 )
 
-//
 const (
 	method_GET  = "GET"
 	method_POST = "POST"

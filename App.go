@@ -85,5 +85,5 @@ func (app App) sendTemplate(w http.ResponseWriter, model interface{}, viewName s
 func (app App) redirect(w http.ResponseWriter, r *http.Request, url string) {
 	checker.Require(url != "", "crater: RedirectUrl cannot be empty string")
 
-	http.Redirect(w, r, url, 301)
+	http.Redirect(w, r, url, http.StatusMovedPermanently)
 }
