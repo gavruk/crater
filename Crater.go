@@ -1,9 +1,12 @@
 package crater
 
 import (
-	"github.com/gavruk/schema"
 	"net/http"
 	"regexp"
+	"time"
+
+	"github.com/gavruk/crater/session"
+	"github.com/gavruk/schema"
 )
 
 const (
@@ -62,3 +65,5 @@ func (h *regexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var craterRequestHandler = &regexpHandler{}
 
 var schemaDecoder = schema.NewDecoder()
+
+var sessionManager = session.NewSessionManager(time.Minute)

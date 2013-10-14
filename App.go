@@ -3,11 +3,13 @@ package crater
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gavruk/checker"
 	"html/template"
 	"net/http"
 	"path"
 	"regexp"
+
+	"github.com/gavruk/checker"
+	"github.com/gavruk/crater/cookie"
 )
 
 type handlerFunc func(*Request, *Response)
@@ -33,7 +35,7 @@ func (app *App) Settings(settings Settings) {
 func (app App) Get(url string, handler handlerFunc) {
 	craterRequestHandler.HandleGet(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 		req := &Request{}
-		req.httpRequest = r
+		req.init(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
 
 		res := &Response{}
 		handler(req, res)
@@ -52,7 +54,7 @@ func (app App) Post(url string, handler handlerFunc) {
 	craterRequestHandler.HandlePost(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 
 		req := &Request{}
-		req.httpRequest = r
+		req.init(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
 
 		res := &Response{}
 		handler(req, res)

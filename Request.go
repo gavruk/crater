@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/gavruk/crater/cookie"
+	"github.com/gavruk/crater/session"
 )
 
 // Request handles request data
@@ -11,6 +14,15 @@ type Request struct {
 	params       map[string][]string
 	httpRequest  *http.Request
 	isFormParsed bool
+
+	Session *session.Session
+	Cookie  *cookie.CookieManager
+}
+
+func (req *Request) init(r *http.Request, s *session.Session, c *cookie.CookieManager) {
+	req.httpRequest = r
+	req.Session = s
+	req.Cookie = c
 }
 
 // GetString returns query param as string
