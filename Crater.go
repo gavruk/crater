@@ -25,15 +25,15 @@ type regexpHandler struct {
 	postRoutes []*route
 }
 
-func (h *regexpHandler) HandleGet(pattern *regexp.Regexp, handler func(http.ResponseWriter, *http.Request)) {
+func (h *regexpHandler) handleGet(pattern *regexp.Regexp, handler func(http.ResponseWriter, *http.Request)) {
 	h.getRoutes = append(h.getRoutes, &route{pattern, http.HandlerFunc(handler)})
 }
 
-func (h *regexpHandler) HandlePost(pattern *regexp.Regexp, handler func(http.ResponseWriter, *http.Request)) {
+func (h *regexpHandler) handlePost(pattern *regexp.Regexp, handler func(http.ResponseWriter, *http.Request)) {
 	h.postRoutes = append(h.postRoutes, &route{pattern, http.HandlerFunc(handler)})
 }
 
-func (h *regexpHandler) HandleStatic(pattern *regexp.Regexp, url string, fs http.FileSystem) {
+func (h *regexpHandler) handleStatic(pattern *regexp.Regexp, url string, fs http.FileSystem) {
 	h.getRoutes = append(h.getRoutes, &route{pattern, http.StripPrefix(url, http.FileServer(fs))})
 }
 
@@ -66,4 +66,4 @@ var craterRequestHandler = &regexpHandler{}
 
 var schemaDecoder = schema.NewDecoder()
 
-var sessionManager = session.NewSessionManager(time.Minute)
+var sessionManager = session.NewSessionManager(time.Hour)

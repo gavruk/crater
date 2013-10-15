@@ -28,9 +28,7 @@ func (req *Request) init(r *http.Request, s *session.Session, c *cookie.CookieMa
 // GetString returns query param as string
 // GetString return empty string if param not found
 func (req *Request) GetString(name string) (string, bool) {
-	if !req.isFormParsed {
-		req.parseForm()
-	}
+	req.parseForm()
 
 	var value []string
 	for k, v := range req.params {
@@ -48,9 +46,7 @@ func (req *Request) GetString(name string) (string, bool) {
 // GetArray returns query param as array
 // GetArray return empty array if param not found
 func (req *Request) GetArray(name string) ([]string, bool) {
-	if !req.isFormParsed {
-		req.parseForm()
-	}
+	req.parseForm()
 
 	var value []string
 	for k, v := range req.params {
@@ -71,14 +67,15 @@ func (req *Request) Parse(s interface{}) error {
 		jsonDecoder := json.NewDecoder(req.httpRequest.Body)
 		return jsonDecoder.Decode(s)
 	} else {
-		if !req.isFormParsed {
-			req.parseForm()
-		}
+		req.parseForm()
 		return schemaDecoder.Decode(s, req.params)
 	}
 }
 
 func (req *Request) parseForm() error {
+	if req.isFormParsed {
+		return nil
+	}
 	if err := req.httpRequest.ParseForm(); err != nil {
 		return err
 	}

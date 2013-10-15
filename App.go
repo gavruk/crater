@@ -33,10 +33,9 @@ func (app *App) Settings(settings Settings) {
 
 // Get handles GET requests
 func (app App) Get(url string, handler handlerFunc) {
-	craterRequestHandler.HandleGet(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
+	craterRequestHandler.handleGet(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 		req := &Request{}
 		req.init(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
-
 		res := &Response{}
 		handler(req, res)
 
@@ -51,11 +50,9 @@ func (app App) Get(url string, handler handlerFunc) {
 
 // Post handles POST requests
 func (app App) Post(url string, handler handlerFunc) {
-	craterRequestHandler.HandlePost(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
-
+	craterRequestHandler.handlePost(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 		req := &Request{}
 		req.init(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
-
 		res := &Response{}
 		handler(req, res)
 
@@ -67,8 +64,9 @@ func (app App) Post(url string, handler handlerFunc) {
 	})
 }
 
-func (app App) HandleStaticFiles(url string) {
-	craterRequestHandler.HandleStatic(regexp.MustCompile("^"+url), url, http.Dir(app.settings.StaticFilesPath))
+// HandleStaticContent handles Statis Content
+func (app App) HandleStaticContent(url string) {
+	craterRequestHandler.handleStatic(regexp.MustCompile("^"+url), url, http.Dir(app.settings.StaticFilesPath))
 }
 
 func (app App) sendJson(w http.ResponseWriter, model interface{}) {

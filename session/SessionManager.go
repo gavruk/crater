@@ -10,14 +10,18 @@ import (
 
 const (
 	rawExpiresFormat = "Fri, 01-Jan-2001 11:11:11 +0300"
+	cookieName       = "crater.SessionId"
 )
 
+// SessionManager stores sessions
 type SessionManager struct {
 	sessions map[string]*Session
 	timeout  time.Duration
 	mutex    sync.RWMutex
 }
 
+// NewSessionManager creates new instance SessionManager
+// NewSessionManager should be called once per application
 func NewSessionManager(timeout time.Duration) *SessionManager {
 	manager := new(SessionManager)
 	manager.sessions = make(map[string]*Session)
@@ -27,7 +31,7 @@ func NewSessionManager(timeout time.Duration) *SessionManager {
 		for {
 			now := time.Now().UTC().Unix()
 			for id, session := range manager.sessions {
-				if session.expires.UTC().Unix() < now {
+				if session.Expires.UTC().Unix() < now {
 					delete(manager.sessions, id)
 				}
 			}
@@ -37,43 +41,55 @@ func NewSessionManager(timeout time.Duration) *SessionManager {
 	return manager
 }
 
+// Abandon terminates session by session Id
 func (manager *SessionManager) Abandon(id string) {
 	delete(manager.sessions, id)
 }
 
-func (manager *SessionManager) getSessionById(id string) (session *Session) {
+// GetSession returns current session
+// GetSession init new session if session doesn't exist
+func (manager *SessionManager) GetSession(w http.ResponseWriter, r *http.Request) *Session {
 	manager.mutex.Lock()
 	defer manager.mutex.Unlock()
-	if id == "" || !manager.sessionExists(id) {
-		id = manager.generateId()
+
+	sessionId, cookieFound := manager.getSessionIdFromCookie(r)
+	if !cookieFound {
+		return manager.initSession(w)
 	}
-	s, found := manager.sessions[id]
-	if !found {
-		session = &Session{id, nil, time.Now().UTC().Add(manager.timeout), manager}
-		manager.sessions[id] = session
-	} else {
-		session = s
+
+	session, sessionFound := manager.getSessionById(sessionId)
+	if !sessionFound {
+		return manager.initSession(w)
 	}
+	return session
+}
+
+func (manager *SessionManager) getSessionIdFromCookie(r *http.Request) (id string, found bool) {
+	id = ""
+	c, _ := r.Cookie(cookieName)
+	if c != nil {
+		return c.Value, true
+	}
+	return "", false
+}
+
+func (manager *SessionManager) getSessionById(id string) (session *Session, found bool) {
+	session, found = manager.sessions[id]
 	return
 }
 
-func (manager *SessionManager) GetSession(w http.ResponseWriter, r *http.Request) (session *Session) {
-	sessionId := ""
-	c, _ := r.Cookie("crater.SessionId")
-	if c != nil {
-		sessionId = c.Value
-	}
-
-	session = manager.getSessionById(sessionId)
-
+func (manager *SessionManager) initSession(w http.ResponseWriter) (session *Session) {
+	id := manager.generateId()
+	session = &Session{id, nil, time.Now().UTC().Add(manager.timeout), manager}
+	manager.sessions[id] = session
 	cookie := &http.Cookie{
-		Name:       "crater.SessionId",
+		Name:       cookieName,
 		Value:      session.Id,
-		Expires:    time.Now().Add(time.Hour),
-		RawExpires: time.Now().Add(time.Hour).Format(rawExpiresFormat),
+		Expires:    time.Now().UTC().Add(manager.timeout),
+		RawExpires: time.Now().UTC().Add(manager.timeout).Format(rawExpiresFormat),
 	}
 	http.SetCookie(w, cookie)
-	return
+	return session
 }
 
 func (manager *SessionManager) sessionExists(id string) bool {
