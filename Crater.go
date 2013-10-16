@@ -66,4 +66,4 @@ var craterRequestHandler = &regexpHandler{}
 
 var schemaDecoder = schema.NewDecoder()
 
-var sessionManager = session.NewSessionManager(session.NewInMemorySessionStore(time.Hour), time.Hour)
+var sessionManager = session.NewSessionManager(session.NewInMemorySessionStore(), time.Hour)

@@ -19,14 +19,11 @@ const (
 
 type InMemorySessionStore struct {
 	sessions map[string]*Session
-	timeout  time.Duration
-	mutex    sync.RWMutex
 }
 
-func NewInMemorySessionStore(timeout time.Duration) InMemorySessionStore {
+func NewInMemorySessionStore() InMemorySessionStore {
 	store := InMemorySessionStore{}
 	store.sessions = make(map[string]*Session)
-	store.timeout = timeout
 
 	go func(store InMemorySessionStore) {
 		for {
@@ -64,7 +61,7 @@ func (store InMemorySessionStore) New(id string, session *Session) error {
 type SessionManager struct {
 	store   SessionStore
 	timeout time.Duration
-	mutex   sync.Mutex
+	mutex   sync.RWMutex
 }
 
 func NewSessionManager(store SessionStore, timeout time.Duration) *SessionManager {

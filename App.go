@@ -7,9 +7,11 @@ import (
 	"net/http"
 	"path"
 	"regexp"
+	"time"
 
 	"github.com/gavruk/checker"
 	"github.com/gavruk/crater/cookie"
+	"github.com/gavruk/crater/session"
 )
 
 type handlerFunc func(*Request, *Response)
@@ -29,6 +31,10 @@ func (app *App) Settings(settings Settings) {
 	if app.settings.StaticFilesPath == "" {
 		app.settings.StaticFilesPath = "."
 	}
+}
+
+func (app App) UseSessionStore(store session.SessionStore, timeout time.Duration) {
+	sessionManager = session.NewSessionManager(store, timeout)
 }
 
 // Get handles GET requests
