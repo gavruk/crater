@@ -9,41 +9,70 @@ import (
 )
 
 const (
-	rawExpiresFormat = "Fri, 01-Jan-2001 11:11:11 +0300"
-	cookieName       = "crater.SessionId"
+	rawExpiresFormat  = "Fri, 01-Jan-2001 11:11:11 +0300"
+	sessionCookieName = "crater.SessionId"
 )
 
-// SessionManager stores sessions
-type SessionManager struct {
+// -----------------------------
+// In-Memory Session Store
+// -----------------------------
+
+type InMemorySessionStore struct {
 	sessions map[string]*Session
 	timeout  time.Duration
 	mutex    sync.RWMutex
 }
 
-// NewSessionManager creates new instance SessionManager
-// NewSessionManager should be called once per application
-func NewSessionManager(timeout time.Duration) *SessionManager {
-	manager := new(SessionManager)
-	manager.sessions = make(map[string]*Session)
-	manager.timeout = timeout
+func NewInMemorySessionStore(timeout time.Duration) InMemorySessionStore {
+	store := InMemorySessionStore{}
+	store.sessions = make(map[string]*Session)
+	store.timeout = timeout
 
-	go func(manager *SessionManager) {
+	go func(store InMemorySessionStore) {
 		for {
 			now := time.Now().UTC().Unix()
-			for id, session := range manager.sessions {
+			for id, session := range store.sessions {
 				if session.Expires.UTC().Unix() < now {
-					delete(manager.sessions, id)
+					store.Delete(id)
 				}
 			}
 			time.Sleep(time.Minute)
 		}
-	}(manager)
-	return manager
+	}(store)
+
+	return store
 }
 
-// Abandon terminates session by session Id
-func (manager *SessionManager) Abandon(id string) {
-	delete(manager.sessions, id)
+func (store InMemorySessionStore) Delete(id string) error {
+	delete(store.sessions, id)
+	return nil
+}
+
+func (store InMemorySessionStore) Get(id string) (*Session, error) {
+	return store.sessions[id], nil
+}
+
+func (store InMemorySessionStore) New(id string, session *Session) error {
+	store.sessions[id] = session
+	return nil
+}
+
+// -----------------------------------
+// Session Manager
+// -----------------------------------
+
+type SessionManager struct {
+	store   SessionStore
+	timeout time.Duration
+	mutex   sync.Mutex
+}
+
+func NewSessionManager(store SessionStore, timeout time.Duration) *SessionManager {
+	manager := new(SessionManager)
+	manager.store = store
+	manager.timeout = timeout
+
+	return manager
 }
 
 // GetSession returns current session
@@ -57,44 +86,40 @@ func (manager *SessionManager) GetSession(w http.ResponseWriter, r *http.Request
 		return manager.initSession(w)
 	}
 
-	session, sessionFound := manager.getSessionById(sessionId)
-	if !sessionFound {
+	session, _ := manager.store.Get(sessionId)
+	if session == nil {
 		return manager.initSession(w)
 	}
+	session.store = manager.store
 	return session
 }
 
 func (manager *SessionManager) getSessionIdFromCookie(r *http.Request) (id string, found bool) {
 	id = ""
-	c, _ := r.Cookie(cookieName)
+	c, _ := r.Cookie(sessionCookieName)
 	if c != nil {
 		return c.Value, true
 	}
 	return "", false
 }
 
-func (manager *SessionManager) getSessionById(id string) (session *Session, found bool) {
-	session, found = manager.sessions[id]
-	return
-}
-
 func (manager *SessionManager) initSession(w http.ResponseWriter) (session *Session) {
 	id := manager.generateId()
-	session = &Session{id, nil, time.Now().UTC().Add(manager.timeout), manager}
-	manager.sessions[id] = session
+	session = &Session{
+		Id:      id,
+		Value:   nil,
+		Expires: time.Now().UTC().Add(manager.timeout),
+	}
 	cookie := &http.Cookie{
-		Name:       cookieName,
+		Name:       sessionCookieName,
 		Value:      session.Id,
 		Expires:    time.Now().UTC().Add(manager.timeout),
 		RawExpires: time.Now().UTC().Add(manager.timeout).Format(rawExpiresFormat),
 	}
 	http.SetCookie(w, cookie)
+	manager.store.New(session.Id, session)
+	session.store = manager.store
 	return session
-}
-
-func (manager *SessionManager) sessionExists(id string) bool {
-	_, found := manager.sessions[id]
-	return found
 }
 
 func (manager *SessionManager) generateId() string {
