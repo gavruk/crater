@@ -11,10 +11,9 @@ import (
 
 // Request handles request data
 type Request struct {
-	params       map[string][]string
-	httpRequest  *http.Request
-	isFormParsed bool
+	httpRequest *http.Request
 
+	Values  map[string][]string
 	Session *session.Session
 	Cookie  *cookie.CookieManager
 }
@@ -23,15 +22,16 @@ func (req *Request) init(r *http.Request, s *session.Session, c *cookie.CookieMa
 	req.httpRequest = r
 	req.Session = s
 	req.Cookie = c
+
+	r.ParseForm()
+	req.Values = r.Form
 }
 
 // GetString returns query param as string
 // GetString return empty string if param not found
 func (req *Request) GetString(name string) (string, bool) {
-	req.parseForm()
-
 	var value []string
-	for k, v := range req.params {
+	for k, v := range req.Values {
 		if strings.EqualFold(k, name) {
 			value = v
 			break
@@ -46,10 +46,8 @@ func (req *Request) GetString(name string) (string, bool) {
 // GetArray returns query param as array
 // GetArray return empty array if param not found
 func (req *Request) GetArray(name string) ([]string, bool) {
-	req.parseForm()
-
 	var value []string
-	for k, v := range req.params {
+	for k, v := range req.Values {
 		if strings.EqualFold(k, name) {
 			value = v
 			break
@@ -67,18 +65,6 @@ func (req *Request) Parse(s interface{}) error {
 		jsonDecoder := json.NewDecoder(req.httpRequest.Body)
 		return jsonDecoder.Decode(s)
 	} else {
-		req.parseForm()
-		return schemaDecoder.Decode(s, req.params)
+		return schemaDecoder.Decode(s, req.Values)
 	}
-}
-
-func (req *Request) parseForm() error {
-	if req.isFormParsed {
-		return nil
-	}
-	if err := req.httpRequest.ParseForm(); err != nil {
-		return err
-	}
-	req.params = req.httpRequest.Form
-	return nil
 }
