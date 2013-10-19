@@ -30,7 +30,7 @@ func (req *Request) init(r *http.Request, s *session.Session, c *cookie.CookieMa
 // GetString returns query param as string
 // GetString return empty string if param not found
 func (req *Request) GetString(name string) (string, bool) {
-	var value []string
+	var value []string = nil
 	for k, v := range req.Values {
 		if strings.EqualFold(k, name) {
 			value = v
@@ -38,15 +38,18 @@ func (req *Request) GetString(name string) (string, bool) {
 		}
 	}
 	if value != nil {
-		return value[0], true
+		if len(value) > 0 {
+			return value[0], true
+		}
+		return "", true
 	}
 	return "", false
 }
 
 // GetArray returns query param as array
-// GetArray return empty array if param not found
+// GetArray return nil if param not found
 func (req *Request) GetArray(name string) ([]string, bool) {
-	var value []string
+	var value []string = nil
 	for k, v := range req.Values {
 		if strings.EqualFold(k, name) {
 			value = v
@@ -56,7 +59,7 @@ func (req *Request) GetArray(name string) ([]string, bool) {
 	if value != nil {
 		return value, true
 	}
-	return make([]string, 0), false
+	return nil, false
 }
 
 func (req *Request) Parse(s interface{}) error {
