@@ -162,8 +162,8 @@ type User struct {
 }
 
 func TestParseContentTypeJson(t *testing.T) {
-	u := &User{"Bill", 42}
-	jsonBytes, _ := json.Marshal(u)
+	userForTest := &User{"Bill", 42}
+	jsonBytes, _ := json.Marshal(userForTest)
 
 	r := newHttpRequest("POST", "localhost:8080/")
 	r.Body = ioutil.NopCloser(bytes.NewReader(jsonBytes))
@@ -172,25 +172,31 @@ func TestParseContentTypeJson(t *testing.T) {
 	req := Request{}
 	req.init(r, new(session.Session), new(cookie.CookieManager))
 
+	u := new(User)
 	req.Parse(u)
+
 	if u.Name != "Bill" || u.Age != 42 {
 		t.Error("Body wasn't parsed")
 	}
 }
 
 func TestParseFormValues(t *testing.T) {
-	u := &User{"Bill", 42}
-	jsonBytes, _ := json.Marshal(u)
+	formValues := map[string][]string{
+		"Name": {"Bill"},
+		"Age":  {"42"},
+	}
 
 	r := newHttpRequest("GET", "localhost:8080/")
-	r.Body = ioutil.NopCloser(bytes.NewReader(jsonBytes))
+	r.Form = formValues
 
 	req := Request{}
 	req.init(r, new(session.Session), new(cookie.CookieManager))
 
+	u := new(User)
 	req.Parse(u)
+
 	if u.Name != "Bill" || u.Age != 42 {
-		t.Error("Body wasn't parsed")
+		t.Error("Form values were not parsed")
 	}
 }
 

@@ -10,9 +10,14 @@ import (
 )
 
 const (
-	method_GET  = "GET"
-	method_POST = "POST"
-	ct_JSON     = "application/json"
+	method_GET    = "GET"
+	method_POST   = "POST"
+	method_PUT    = "PUT"
+	method_DELETE = "DELETE"
+
+	ct_JSON              = "application/json"
+	ct_FormUrlEncoded    = "application/x-www-form-urlencoded"
+	ct_MultipartFormData = "multipart/form-data"
 )
 
 type route struct {
