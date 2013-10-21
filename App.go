@@ -45,12 +45,15 @@ func (app App) Get(url string, handler handlerFunc) {
 		res := &Response{}
 		handler(req, res)
 
-		if res.isRedirect {
+		if res.isJson {
+			app.sendJson(w, res.model)
+		} else if res.isRedirect {
 			app.redirect(w, r, res.redirectUrl)
-			return
+		} else if res.isHtml {
+			app.sendHtml(w, res.html)
+		} else {
+			app.sendTemplate(w, res.model, res.viewName)
 		}
-
-		app.sendTemplate(w, res.model, res.viewName)
 	})
 }
 
@@ -64,6 +67,10 @@ func (app App) Post(url string, handler handlerFunc) {
 
 		if res.isJson {
 			app.sendJson(w, res.model)
+		} else if res.isRedirect {
+			app.redirect(w, r, res.redirectUrl)
+		} else if res.isHtml {
+			app.sendHtml(w, res.html)
 		} else {
 			app.sendTemplate(w, res.model, res.viewName)
 		}
@@ -79,6 +86,10 @@ func (app App) sendJson(w http.ResponseWriter, model interface{}) {
 	w.Header().Set("Content-Type", ct_JSON)
 	jsonObj, _ := json.Marshal(model)
 	fmt.Fprint(w, string(jsonObj))
+}
+
+func (app App) sendHtml(w http.ResponseWriter, html string) {
+	fmt.Fprint(w, html)
 }
 
 func (app App) sendTemplate(w http.ResponseWriter, model interface{}, viewName string) {

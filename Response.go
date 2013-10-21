@@ -7,6 +7,8 @@ type Response struct {
 	isJson      bool
 	redirectUrl string
 	isRedirect  bool
+	html        string
+	isHtml      bool
 }
 
 // Render renders html with model
@@ -30,10 +32,18 @@ func (res *Response) Redirect(url string) {
 	res.isRedirect = true
 }
 
+func (res *Response) RenderString(html string) {
+	res.cleanUpResponse()
+	res.html = html
+	res.isHtml = true
+}
+
 func (res *Response) cleanUpResponse() {
 	res.viewName = ""
 	res.model = nil
 	res.isJson = false
 	res.redirectUrl = ""
 	res.isRedirect = false
+	res.isHtml = false
+	res.html = ""
 }
