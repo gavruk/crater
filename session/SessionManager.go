@@ -21,11 +21,11 @@ type InMemorySessionStore struct {
 	sessions map[string]*Session
 }
 
-func NewInMemorySessionStore() InMemorySessionStore {
-	store := InMemorySessionStore{}
+func NewInMemorySessionStore() *InMemorySessionStore {
+	store := &InMemorySessionStore{}
 	store.sessions = make(map[string]*Session)
 
-	go func(store InMemorySessionStore) {
+	go func(store *InMemorySessionStore) {
 		for {
 			now := time.Now().UTC().Unix()
 			for id, session := range store.sessions {
@@ -40,18 +40,16 @@ func NewInMemorySessionStore() InMemorySessionStore {
 	return store
 }
 
-func (store InMemorySessionStore) Delete(id string) error {
+func (store InMemorySessionStore) Delete(id string) {
 	delete(store.sessions, id)
-	return nil
 }
 
-func (store InMemorySessionStore) Get(id string) (*Session, error) {
-	return store.sessions[id], nil
+func (store InMemorySessionStore) Get(id string) *Session {
+	return store.sessions[id]
 }
 
-func (store InMemorySessionStore) New(id string, session *Session) error {
+func (store InMemorySessionStore) New(id string, session *Session) {
 	store.sessions[id] = session
-	return nil
 }
 
 // -----------------------------------
@@ -83,7 +81,7 @@ func (manager *SessionManager) GetSession(w http.ResponseWriter, r *http.Request
 		return manager.initSession(w)
 	}
 
-	session, _ := manager.store.Get(sessionId)
+	session := manager.store.Get(sessionId)
 	if session == nil {
 		return manager.initSession(w)
 	}
@@ -100,18 +98,17 @@ func (manager *SessionManager) getSessionIdFromCookie(r *http.Request) (id strin
 	return "", false
 }
 
-func (manager *SessionManager) initSession(w http.ResponseWriter) (session *Session) {
+func (manager *SessionManager) initSession(w http.ResponseWriter) *Session {
 	id := manager.generateId()
-	session = &Session{
+	session := &Session{
 		Id:      id,
 		Value:   nil,
 		Expires: time.Now().UTC().Add(manager.timeout),
 	}
 	cookie := &http.Cookie{
-		Name:       sessionCookieName,
-		Value:      session.Id,
-		Expires:    time.Now().UTC().Add(manager.timeout),
-		RawExpires: time.Now().UTC().Add(manager.timeout).Format(rawExpiresFormat),
+		Name:    sessionCookieName,
+		Value:   session.Id,
+		Expires: time.Now().UTC().Add(manager.timeout),
 	}
 	http.SetCookie(w, cookie)
 	manager.store.New(session.Id, session)

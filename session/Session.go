@@ -24,7 +24,7 @@ func (session *Session) Abandon() {
 // Session Store
 // ------------------------
 type SessionStore interface {
-	Get(id string) (*Session, error)
-	New(id string, session *Session) error
-	Delete(id string) error
+	Get(id string) *Session
+	New(id string, session *Session)
+	Delete(id string)
 }
