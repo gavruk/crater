@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/gavruk/checker"
 	"github.com/gavruk/crater/cookie"
 	"github.com/gavruk/crater/session"
 )
@@ -93,14 +92,18 @@ func (app App) sendHtml(w http.ResponseWriter, html string) {
 }
 
 func (app App) sendTemplate(w http.ResponseWriter, model interface{}, viewName string) {
-	checker.Require(viewName != "", "crater: ViewName cannot be empty string")
+	if viewName == "" {
+		panic("crater: ViewName cannot be empty string")
+	}
 
 	t, _ := template.ParseFiles(path.Join(app.settings.ViewsPath, viewName+".html"))
 	t.Execute(w, model)
 }
 
 func (app App) redirect(w http.ResponseWriter, r *http.Request, url string) {
-	checker.Require(url != "", "crater: RedirectUrl cannot be empty string")
+	if url == "" {
+		panic("crater: RedirectUrl cannot be empty string")
+	}
 
 	http.Redirect(w, r, url, http.StatusMovedPermanently)
 }
