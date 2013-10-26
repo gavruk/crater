@@ -4,4 +4,5 @@ package crater
 type Settings struct {
 	ViewsPath       string
 	StaticFilesPath string
+	ViewExtension   string
 }

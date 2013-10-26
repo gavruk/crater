@@ -67,6 +67,8 @@ func (h *regexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
+var htmlTemplates = Template{}
+
 var craterRequestHandler = &regexpHandler{}
 
 var schemaDecoder = schema.NewDecoder()

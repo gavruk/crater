@@ -3,9 +3,7 @@ package crater
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
-	"path"
 	"regexp"
 	"time"
 
@@ -30,6 +28,11 @@ func (app *App) Settings(settings Settings) {
 	if app.settings.StaticFilesPath == "" {
 		app.settings.StaticFilesPath = "."
 	}
+	if app.settings.ViewExtension == "" {
+		app.settings.ViewExtension = "html"
+	}
+
+	htmlTemplates.Parse(app.settings.ViewsPath, app.settings.ViewExtension)
 }
 
 func (app App) UseSessionStore(store session.SessionStore, timeout time.Duration) {
@@ -96,8 +99,9 @@ func (app App) sendTemplate(w http.ResponseWriter, model interface{}, viewName s
 		panic("crater: ViewName cannot be empty string")
 	}
 
-	t, _ := template.ParseFiles(path.Join(app.settings.ViewsPath, viewName+".html"))
-	t.Execute(w, model)
+	htmlTemplates.Render(w, viewName, model)
+	//t, _ := template.ParseFiles(path.Join(app.settings.ViewsPath, viewName+".html"))
+	//t.Execute(w, model)
 }
 
 func (app App) redirect(w http.ResponseWriter, r *http.Request, url string) {
