@@ -50,6 +50,7 @@ func (h *regexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case method_POST:
 		routes = h.postRoutes
 	}
+
 	urlPath := r.URL.Path
 	if urlPath == "" {
 		http.NotFound(w, r)
@@ -66,10 +67,6 @@ func (h *regexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	http.NotFound(w, r)
 }
-
-var htmlTemplates = Template{}
-
-var craterRequestHandler = &regexpHandler{}
 
 var schemaDecoder = schema.NewDecoder()
 

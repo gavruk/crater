@@ -7,20 +7,19 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	craterRequestHandler = &regexpHandler{}
 	url := "/url"
-	app := App{}
+	app := NewApp(nil)
 	app.Get(url, func(req *Request, res *Response) {
 		res.RenderString("<h1>html</h1>")
 	})
 
-	if len(craterRequestHandler.getRoutes) != 1 {
+	if len(app.craterRequestHandler.getRoutes) != 1 {
 		t.Error("get routes should have 1 hander")
 	}
-	if len(craterRequestHandler.postRoutes) != 0 {
+	if len(app.craterRequestHandler.postRoutes) != 0 {
 		t.Error("post routes should have no handers")
 	}
-	route := craterRequestHandler.getRoutes[0]
+	route := app.craterRequestHandler.getRoutes[0]
 	if route.routeHandler == nil {
 		t.Error("Route hander is nil")
 	}
@@ -30,20 +29,19 @@ func TestGet(t *testing.T) {
 }
 
 func TestPost(t *testing.T) {
-	craterRequestHandler = &regexpHandler{}
 	url := "/url"
-	app := App{}
+	app := NewApp(nil)
 	app.Post(url, func(req *Request, res *Response) {
 		res.RenderString("<h1>html</h1>")
 	})
 
-	if len(craterRequestHandler.postRoutes) != 1 {
+	if len(app.craterRequestHandler.postRoutes) != 1 {
 		t.Error("post routes should have 1 hander")
 	}
-	if len(craterRequestHandler.getRoutes) != 0 {
+	if len(app.craterRequestHandler.getRoutes) != 0 {
 		t.Error("get routes should have no handers")
 	}
-	route := craterRequestHandler.postRoutes[0]
+	route := app.craterRequestHandler.postRoutes[0]
 	if route.routeHandler == nil {
 		t.Error("Route hander is nil")
 	}
@@ -53,7 +51,7 @@ func TestPost(t *testing.T) {
 }
 
 func TestUseSessionStore(t *testing.T) {
-	app := App{}
+	app := NewApp(nil)
 	store := session.NewInMemorySessionStore()
 	timeout := time.Minute
 
@@ -66,18 +64,17 @@ func TestUseSessionStore(t *testing.T) {
 }
 
 func TestHandleStaticContent(t *testing.T) {
-	craterRequestHandler = &regexpHandler{}
 	content := "/content"
-	app := App{}
+	app := NewApp(nil)
 	app.HandleStaticContent("/content")
 
-	if len(craterRequestHandler.postRoutes) != 0 {
+	if len(app.craterRequestHandler.postRoutes) != 0 {
 		t.Error("post routes should have no handers")
 	}
-	if len(craterRequestHandler.getRoutes) != 1 {
+	if len(app.craterRequestHandler.getRoutes) != 1 {
 		t.Error("get routes should have 1 hander")
 	}
-	route := craterRequestHandler.getRoutes[0]
+	route := app.craterRequestHandler.getRoutes[0]
 	if route.routeHandler == nil {
 		t.Error("Route hander is nil")
 	}

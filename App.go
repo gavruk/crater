@@ -15,24 +15,45 @@ type handlerFunc func(*Request, *Response)
 
 // App recieves settings and handles http requests
 type App struct {
-	settings Settings
+	craterRequestHandler *regexpHandler
+	htmlTemplates        *Template
+	settings             *Settings
+}
+
+func NewApp(settings *Settings) App {
+	app := App{}
+	app.craterRequestHandler = &regexpHandler{}
+	app.htmlTemplates = &Template{}
+	if settings != nil {
+		app.settings = &Settings{}
+		app.Settings(settings)
+	} else {
+		app.settings = DefaultSettings()
+	}
+	app.htmlTemplates.Parse(app.settings.ViewsPath, app.settings.ViewExtension)
+
+	return app
 }
 
 // Settings recieves settings application
-func (app *App) Settings(settings Settings) {
-	app.settings = settings
-
-	if app.settings.ViewsPath == "" {
+func (app *App) Settings(settings *Settings) {
+	if settings.ViewsPath == "" {
 		app.settings.ViewsPath = "."
+	} else {
+		app.settings.ViewsPath = settings.ViewsPath
 	}
-	if app.settings.StaticFilesPath == "" {
+	if settings.StaticFilesPath == "" {
 		app.settings.StaticFilesPath = "."
+	} else {
+		app.settings.StaticFilesPath = settings.StaticFilesPath
 	}
-	if app.settings.ViewExtension == "" {
+	if settings.ViewExtension == "" {
 		app.settings.ViewExtension = "html"
+	} else {
+		app.settings.ViewExtension = settings.ViewExtension
 	}
 
-	htmlTemplates.Parse(app.settings.ViewsPath, app.settings.ViewExtension)
+	app.htmlTemplates.Parse(app.settings.ViewsPath, app.settings.ViewExtension)
 }
 
 func (app App) UseSessionStore(store session.SessionStore, timeout time.Duration) {
@@ -41,7 +62,7 @@ func (app App) UseSessionStore(store session.SessionStore, timeout time.Duration
 
 // Get handles GET requests
 func (app App) Get(url string, handler handlerFunc) {
-	craterRequestHandler.handleGet(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
+	app.craterRequestHandler.handleGet(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 		req := &Request{}
 		req.init(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
 		res := &Response{}
@@ -61,7 +82,7 @@ func (app App) Get(url string, handler handlerFunc) {
 
 // Post handles POST requests
 func (app App) Post(url string, handler handlerFunc) {
-	craterRequestHandler.handlePost(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
+	app.craterRequestHandler.handlePost(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 		req := &Request{}
 		req.init(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
 		res := &Response{}
@@ -81,7 +102,11 @@ func (app App) Post(url string, handler handlerFunc) {
 
 // HandleStaticContent handles Statis Content
 func (app App) HandleStaticContent(url string) {
-	craterRequestHandler.handleStatic(regexp.MustCompile("^"+url), url, http.Dir(app.settings.StaticFilesPath))
+	app.craterRequestHandler.handleStatic(regexp.MustCompile("^"+url), url, http.Dir(app.settings.StaticFilesPath))
+}
+
+func (app App) Listen(serverURL string) {
+	http.ListenAndServe(serverURL, app.craterRequestHandler)
 }
 
 func (app App) sendJson(w http.ResponseWriter, model interface{}) {
@@ -99,9 +124,7 @@ func (app App) sendTemplate(w http.ResponseWriter, model interface{}, viewName s
 		panic("crater: ViewName cannot be empty string")
 	}
 
-	htmlTemplates.Render(w, viewName, model)
-	//t, _ := template.ParseFiles(path.Join(app.settings.ViewsPath, viewName+".html"))
-	//t.Execute(w, model)
+	app.htmlTemplates.Render(w, viewName, model)
 }
 
 func (app App) redirect(w http.ResponseWriter, r *http.Request, url string) {

@@ -6,3 +6,12 @@ type Settings struct {
 	StaticFilesPath string
 	ViewExtension   string
 }
+
+func DefaultSettings() *Settings {
+	settings := &Settings{
+		ViewsPath:       ".",
+		StaticFilesPath: ".",
+		ViewExtension:   "html",
+	}
+	return settings
+}
