@@ -16,21 +16,21 @@ type handlerFunc func(*Request, *Response)
 // App recieves settings and handles http requests
 type App struct {
 	craterRequestHandler *regexpHandler
-	htmlTemplates        *Template
+	htmlTemplates        *craterTemplate
 	settings             *Settings
 }
 
 func NewApp(settings *Settings) App {
 	app := App{}
 	app.craterRequestHandler = &regexpHandler{}
-	app.htmlTemplates = &Template{}
+	app.htmlTemplates = &craterTemplate{}
 	if settings != nil {
 		app.settings = &Settings{}
 		app.Settings(settings)
 	} else {
 		app.settings = DefaultSettings()
+		app.htmlTemplates.parseFolder(app.settings.ViewsPath, app.settings.ViewExtension)
 	}
-	app.htmlTemplates.Parse(app.settings.ViewsPath, app.settings.ViewExtension)
 
 	return app
 }
@@ -53,7 +53,7 @@ func (app *App) Settings(settings *Settings) {
 		app.settings.ViewExtension = settings.ViewExtension
 	}
 
-	app.htmlTemplates.Parse(app.settings.ViewsPath, app.settings.ViewExtension)
+	app.htmlTemplates.parseFolder(app.settings.ViewsPath, app.settings.ViewExtension)
 }
 
 func (app App) UseSessionStore(store session.SessionStore, timeout time.Duration) {
@@ -124,7 +124,7 @@ func (app App) sendTemplate(w http.ResponseWriter, model interface{}, viewName s
 		panic("crater: ViewName cannot be empty string")
 	}
 
-	app.htmlTemplates.Render(w, viewName, model)
+	app.htmlTemplates.render(w, viewName, model)
 }
 
 func (app App) redirect(w http.ResponseWriter, r *http.Request, url string) {

@@ -6,23 +6,23 @@ import (
 	"path/filepath"
 )
 
-type Template struct {
+type craterTemplate struct {
 	viewPath string
 
-	tmpl *template.Template
+	ctemplate *template.Template
 }
 
-func (t *Template) Parse(viewPath string, extension string) {
+func (t *craterTemplate) parseFolder(viewPath string, extension string) {
 	t.viewPath = viewPath
 
 	pattern := filepath.Join(viewPath, "/*."+extension)
 	patternInner := filepath.Join(viewPath, "/*/*."+extension)
-	tmp, _ := template.ParseGlob(pattern)
-	tmp, _ = tmp.ParseGlob(patternInner)
+	tmpl, _ := template.ParseGlob(pattern)
+	tmpl, _ = tmpl.ParseGlob(patternInner)
 
-	t.tmpl = tmp
+	t.ctemplate = tmpl
 }
 
-func (t *Template) Render(w http.ResponseWriter, name string, data interface{}) {
-	t.tmpl.ExecuteTemplate(w, name, data)
+func (t *craterTemplate) render(w http.ResponseWriter, name string, data interface{}) {
+	t.ctemplate.ExecuteTemplate(w, name, data)
 }
