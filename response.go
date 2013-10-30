@@ -1,49 +1,42 @@
 package crater
 
+const (
+	response_template = 1
+	response_html     = 2
+	response_json     = 3
+	response_redirect = 4
+)
+
 // Response handles response data
 type Response struct {
 	viewName    string
 	model       interface{}
-	isJson      bool
 	redirectUrl string
-	isRedirect  bool
 	html        string
-	isHtml      bool
+
+	responseType int
 }
 
 // Render renders html with model
 func (res *Response) Render(viewName string, model interface{}) {
-	res.cleanUpResponse()
 	res.viewName = viewName
 	res.model = model
+	res.responseType = response_template
 }
 
 // Json returns model as json
 func (res *Response) Json(model interface{}) {
-	res.cleanUpResponse()
 	res.model = model
-	res.isJson = true
+	res.responseType = response_json
 }
 
 // Redirect redirects to url
 func (res *Response) Redirect(url string) {
-	res.cleanUpResponse()
 	res.redirectUrl = url
-	res.isRedirect = true
+	res.responseType = response_redirect
 }
 
 func (res *Response) RenderString(html string) {
-	res.cleanUpResponse()
 	res.html = html
-	res.isHtml = true
-}
-
-func (res *Response) cleanUpResponse() {
-	res.viewName = ""
-	res.model = nil
-	res.isJson = false
-	res.redirectUrl = ""
-	res.isRedirect = false
-	res.isHtml = false
-	res.html = ""
+	res.responseType = response_html
 }

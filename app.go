@@ -65,14 +65,15 @@ func (app App) Get(url string, handler handlerFunc) {
 		res := &Response{}
 		handler(req, res)
 
-		if res.isJson {
-			app.sendJson(w, res.model)
-		} else if res.isRedirect {
-			app.redirect(w, r, res.redirectUrl)
-		} else if res.isHtml {
-			app.sendHtml(w, res.html)
-		} else {
+		switch res.responseType {
+		case response_template:
 			app.sendTemplate(w, res.model, res.viewName)
+		case response_json:
+			app.sendJson(w, res.model)
+		case response_redirect:
+			app.redirect(w, r, res.redirectUrl)
+		case response_html:
+			app.sendHtml(w, res.html)
 		}
 	})
 }
@@ -85,14 +86,15 @@ func (app App) Post(url string, handler handlerFunc) {
 		res := &Response{}
 		handler(req, res)
 
-		if res.isJson {
-			app.sendJson(w, res.model)
-		} else if res.isRedirect {
-			app.redirect(w, r, res.redirectUrl)
-		} else if res.isHtml {
-			app.sendHtml(w, res.html)
-		} else {
+		switch res.responseType {
+		case response_template:
 			app.sendTemplate(w, res.model, res.viewName)
+		case response_json:
+			app.sendJson(w, res.model)
+		case response_redirect:
+			app.redirect(w, r, res.redirectUrl)
+		case response_html:
+			app.sendHtml(w, res.html)
 		}
 	})
 }
