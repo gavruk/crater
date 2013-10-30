@@ -29,7 +29,6 @@ func NewApp(settings *Settings) App {
 		app.Settings(settings)
 	} else {
 		app.settings = DefaultSettings()
-		app.htmlTemplates.parseFolder(app.settings.ViewsPath, app.settings.ViewExtension)
 	}
 
 	return app
@@ -52,8 +51,6 @@ func (app *App) Settings(settings *Settings) {
 	} else {
 		app.settings.ViewExtension = settings.ViewExtension
 	}
-
-	app.htmlTemplates.parseFolder(app.settings.ViewsPath, app.settings.ViewExtension)
 }
 
 func (app App) UseSessionStore(store session.SessionStore, timeout time.Duration) {
@@ -106,6 +103,11 @@ func (app App) HandleStaticContent(url string) {
 }
 
 func (app App) Listen(serverURL string) {
+	err := app.htmlTemplates.parseFolder(app.settings.ViewsPath, app.settings.ViewExtension)
+	if err != nil {
+		panic(err)
+	}
+
 	http.ListenAndServe(serverURL, app.craterRequestHandler)
 }
 
