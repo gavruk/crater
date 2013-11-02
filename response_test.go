@@ -56,15 +56,15 @@ func TestRedirect(t *testing.T) {
 	}
 }
 
-func TestRenderString(t *testing.T) {
+func TestSend(t *testing.T) {
 	res := &Response{}
 	htmlString := "<h1>text</h1>"
-	res.RenderString(htmlString)
+	res.Send(htmlString)
 
-	if res.html != htmlString {
+	if res.responseString != htmlString {
 		t.Error("html was not set correctly")
 	}
-	if res.responseType != response_html {
+	if res.responseType != response_string {
 		t.Error("response type should be 'string'")
 	}
 }

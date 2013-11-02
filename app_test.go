@@ -10,7 +10,7 @@ func TestGet(t *testing.T) {
 	url := "/url"
 	app := NewApp(nil)
 	app.Get(url, func(req *Request, res *Response) {
-		res.RenderString("<h1>html</h1>")
+		res.Send("<h1>html</h1>")
 	})
 
 	if len(app.craterRequestHandler.getRoutes) != 1 {
@@ -32,7 +32,7 @@ func TestPost(t *testing.T) {
 	url := "/url"
 	app := NewApp(nil)
 	app.Post(url, func(req *Request, res *Response) {
-		res.RenderString("<h1>html</h1>")
+		res.Send("<h1>html</h1>")
 	})
 
 	if len(app.craterRequestHandler.postRoutes) != 1 {

@@ -75,8 +75,8 @@ func (app App) Get(url string, handler handlerFunc) {
 			app.sendJson(w, res.model)
 		case response_redirect:
 			app.redirect(w, r, res.redirectUrl)
-		case response_html:
-			app.sendHtml(w, res.html)
+		case response_string:
+			app.sendString(w, res.responseString)
 		}
 	})
 }
@@ -98,8 +98,8 @@ func (app App) Post(url string, handler handlerFunc) {
 			app.sendJson(w, res.model)
 		case response_redirect:
 			app.redirect(w, r, res.redirectUrl)
-		case response_html:
-			app.sendHtml(w, res.html)
+		case response_string:
+			app.sendString(w, res.responseString)
 		}
 	})
 }
@@ -124,8 +124,8 @@ func (app App) sendJson(w http.ResponseWriter, model interface{}) {
 	fmt.Fprint(w, string(jsonObj))
 }
 
-func (app App) sendHtml(w http.ResponseWriter, html string) {
-	fmt.Fprint(w, html)
+func (app App) sendString(w http.ResponseWriter, str string) {
+	fmt.Fprint(w, str)
 }
 
 func (app App) sendTemplate(w http.ResponseWriter, model interface{}, templateName string) {

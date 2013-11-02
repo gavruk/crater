@@ -5,16 +5,16 @@ const (
 	response_view     = 2
 	response_json     = 3
 	response_redirect = 4
-	response_html     = 5
+	response_string   = 5
 )
 
 // Response handles response data
 type Response struct {
-	templateName string
-	viewName     string
-	model        interface{}
-	redirectUrl  string
-	html         string
+	templateName   string
+	viewName       string
+	model          interface{}
+	redirectUrl    string
+	responseString string
 
 	responseType int
 }
@@ -45,7 +45,7 @@ func (res *Response) Redirect(url string) {
 	res.responseType = response_redirect
 }
 
-func (res *Response) RenderString(html string) {
-	res.html = html
-	res.responseType = response_html
+func (res *Response) Send(str string) {
+	res.responseString = str
+	res.responseType = response_string
 }
