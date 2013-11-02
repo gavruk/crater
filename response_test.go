@@ -12,6 +12,21 @@ func TestRender(t *testing.T) {
 	if res.model == nil {
 		t.Error("model was not set correctly")
 	}
+	if res.responseType != response_view {
+		t.Error("response type should be 'html'")
+	}
+}
+
+func TestRenderTemplate(t *testing.T) {
+	res := &Response{}
+	res.RenderTemplate("templateName", new(interface{}))
+
+	if res.templateName != "templateName" {
+		t.Error("templateName was not set correctly")
+	}
+	if res.model == nil {
+		t.Error("model was not set correctly")
+	}
 	if res.responseType != response_template {
 		t.Error("response type should be 'template'")
 	}
@@ -43,14 +58,14 @@ func TestRedirect(t *testing.T) {
 
 func TestRenderString(t *testing.T) {
 	res := &Response{}
-	html := "<h1>text</h1>"
-	res.RenderString(html)
+	htmlString := "<h1>text</h1>"
+	res.RenderString(htmlString)
 
-	if res.html != html {
+	if res.html != htmlString {
 		t.Error("html was not set correctly")
 	}
 	if res.responseType != response_html {
-		t.Error("response type should be 'html'")
+		t.Error("response type should be 'string'")
 	}
 }
 

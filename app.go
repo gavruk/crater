@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path"
 	"regexp"
 	"time"
 
@@ -67,7 +68,9 @@ func (app App) Get(url string, handler handlerFunc) {
 
 		switch res.responseType {
 		case response_template:
-			app.sendTemplate(w, res.model, res.viewName)
+			app.sendTemplate(w, res.model, res.templateName)
+		case response_view:
+			app.sendView(w, res.model, res.viewName, app.settings.ViewExtension)
 		case response_json:
 			app.sendJson(w, res.model)
 		case response_redirect:
@@ -88,7 +91,9 @@ func (app App) Post(url string, handler handlerFunc) {
 
 		switch res.responseType {
 		case response_template:
-			app.sendTemplate(w, res.model, res.viewName)
+			app.sendTemplate(w, res.model, res.templateName)
+		case response_view:
+			app.sendView(w, res.model, res.viewName, app.settings.ViewExtension)
 		case response_json:
 			app.sendJson(w, res.model)
 		case response_redirect:
@@ -123,12 +128,21 @@ func (app App) sendHtml(w http.ResponseWriter, html string) {
 	fmt.Fprint(w, html)
 }
 
-func (app App) sendTemplate(w http.ResponseWriter, model interface{}, viewName string) {
+func (app App) sendTemplate(w http.ResponseWriter, model interface{}, templateName string) {
+	if templateName == "" {
+		panic("crater: TemplateName cannot be empty string")
+	}
+
+	app.htmlTemplates.render(w, templateName, model)
+}
+
+func (app App) sendView(w http.ResponseWriter, model interface{}, viewName string, extension string) {
 	if viewName == "" {
 		panic("crater: ViewName cannot be empty string")
 	}
 
-	app.htmlTemplates.render(w, viewName, model)
+	var filePath = path.Join(app.settings.ViewsPath, viewName+"."+extension)
+	app.htmlTemplates.renderView(w, filePath, model)
 }
 
 func (app App) redirect(w http.ResponseWriter, r *http.Request, url string) {

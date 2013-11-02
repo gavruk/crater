@@ -2,17 +2,19 @@ package crater
 
 const (
 	response_template = 1
-	response_html     = 2
+	response_view     = 2
 	response_json     = 3
 	response_redirect = 4
+	response_html     = 5
 )
 
 // Response handles response data
 type Response struct {
-	viewName    string
-	model       interface{}
-	redirectUrl string
-	html        string
+	templateName string
+	viewName     string
+	model        interface{}
+	redirectUrl  string
+	html         string
 
 	responseType int
 }
@@ -20,6 +22,13 @@ type Response struct {
 // Render renders html with model
 func (res *Response) Render(viewName string, model interface{}) {
 	res.viewName = viewName
+	res.model = model
+	res.responseType = response_view
+}
+
+// RenderTemplate renders template
+func (res *Response) RenderTemplate(templateName string, model interface{}) {
+	res.templateName = templateName
 	res.model = model
 	res.responseType = response_template
 }

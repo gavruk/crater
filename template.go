@@ -39,3 +39,12 @@ func (t *craterTemplate) parseFolder(viewPath string, extension string) error {
 func (t *craterTemplate) render(w http.ResponseWriter, name string, data interface{}) error {
 	return t.ctemplate.ExecuteTemplate(w, name, data)
 }
+
+func (t *craterTemplate) renderView(w http.ResponseWriter, path string, data interface{}) error {
+	tmpl, err := template.ParseFiles(path)
+	if err != nil {
+		return err
+	}
+	tmpl.Execute(w, data)
+	return nil
+}
