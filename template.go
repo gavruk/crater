@@ -1,6 +1,7 @@
 package crater
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"path/filepath"
@@ -17,16 +18,21 @@ func (t *craterTemplate) parseFolder(viewPath string, extension string) error {
 
 	pattern := filepath.Join(viewPath, "/*."+extension)
 	patternInner := filepath.Join(viewPath, "/*/*."+extension)
-	tmpl, err := template.ParseGlob(pattern)
-	if err != nil {
-		return err
-	}
-	tmpl, err = tmpl.ParseGlob(patternInner)
-	if err != nil {
-		return err
+
+	var tmpl, tmplInner *template.Template
+	var err, errorInner error
+	tmpl, err = template.ParseGlob(pattern)
+	tmplInner, errorInner = tmpl.ParseGlob(patternInner)
+
+	if err != nil && errorInner != nil {
+		return fmt.Errorf("template: pattern matches no files: `%s/*.%s`", viewPath, extension)
 	}
 
-	t.ctemplate = tmpl
+	if tmplInner != nil {
+		t.ctemplate = tmplInner
+	} else {
+		t.ctemplate = tmpl
+	}
 	return nil
 }
 
