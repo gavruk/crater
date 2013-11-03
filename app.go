@@ -23,7 +23,7 @@ type App struct {
 
 func NewApp(settings *Settings) App {
 	app := App{}
-	app.craterRequestHandler = &regexpHandler{}
+	app.craterRequestHandler = newCraterHandler()
 	app.htmlTemplates = &craterTemplate{}
 	if settings != nil {
 		app.settings = &Settings{}
@@ -66,18 +66,7 @@ func (app App) Get(url string, handler handlerFunc) {
 		res := &Response{}
 		handler(req, res)
 
-		switch res.responseType {
-		case response_template:
-			app.sendTemplate(w, res.model, res.templateName)
-		case response_view:
-			app.sendView(w, res.model, res.viewName, app.settings.ViewExtension)
-		case response_json:
-			app.sendJson(w, res.model)
-		case response_redirect:
-			app.redirect(w, r, res.redirectUrl)
-		case response_string:
-			app.sendString(w, res.responseString)
-		}
+		app.sendResponse(w, r, res)
 	})
 }
 
@@ -89,19 +78,20 @@ func (app App) Post(url string, handler handlerFunc) {
 		res := &Response{}
 		handler(req, res)
 
-		switch res.responseType {
-		case response_template:
-			app.sendTemplate(w, res.model, res.templateName)
-		case response_view:
-			app.sendView(w, res.model, res.viewName, app.settings.ViewExtension)
-		case response_json:
-			app.sendJson(w, res.model)
-		case response_redirect:
-			app.redirect(w, r, res.redirectUrl)
-		case response_string:
-			app.sendString(w, res.responseString)
-		}
+		app.sendResponse(w, r, res)
 	})
+}
+
+// NotFound overrides 404 status result
+func (app App) NotFound(handler handlerFunc) {
+	app.craterRequestHandler.notFoundHandler = func(w http.ResponseWriter, r *http.Request) {
+		req := &Request{}
+		req.init(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
+		res := &Response{}
+		handler(req, res)
+
+		app.sendResponse(w, r, res)
+	}
 }
 
 // HandleStaticContent handles Statis Content
@@ -116,6 +106,21 @@ func (app App) Listen(serverURL string) {
 	}
 
 	http.ListenAndServe(serverURL, app.craterRequestHandler)
+}
+
+func (app App) sendResponse(w http.ResponseWriter, r *http.Request, res *Response) {
+	switch res.responseType {
+	case response_template:
+		app.sendTemplate(w, res.model, res.templateName)
+	case response_view:
+		app.sendView(w, res.model, res.viewName, app.settings.ViewExtension)
+	case response_json:
+		app.sendJson(w, res.model)
+	case response_redirect:
+		app.redirect(w, r, res.redirectUrl)
+	case response_string:
+		app.sendString(w, res.responseString)
+	}
 }
 
 func (app App) sendJson(w http.ResponseWriter, model interface{}) {

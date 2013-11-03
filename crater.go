@@ -20,6 +20,8 @@ const (
 	ct_MultipartFormData = "multipart/form-data"
 )
 
+type httpHandler func(http.ResponseWriter, *http.Request)
+
 type route struct {
 	pattern      *regexp.Regexp
 	routeHandler http.Handler
@@ -28,6 +30,16 @@ type route struct {
 type regexpHandler struct {
 	getRoutes  []*route
 	postRoutes []*route
+
+	notFoundHandler httpHandler
+}
+
+func newCraterHandler() *regexpHandler {
+	return &regexpHandler{
+		getRoutes:       make([]*route, 0),
+		postRoutes:      make([]*route, 0),
+		notFoundHandler: http.NotFound,
+	}
 }
 
 func (h *regexpHandler) handleGet(pattern *regexp.Regexp, handler func(http.ResponseWriter, *http.Request)) {
@@ -53,7 +65,7 @@ func (h *regexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	urlPath := r.URL.Path
 	if urlPath == "" {
-		http.NotFound(w, r)
+		h.notFoundHandler(w, r)
 	}
 	if urlPath[0] != '/' {
 		urlPath = "/" + urlPath
@@ -65,7 +77,7 @@ func (h *regexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.NotFound(w, r)
+	h.notFoundHandler(w, r)
 }
 
 var schemaDecoder = schema.NewDecoder()
