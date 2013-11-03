@@ -28,8 +28,10 @@ type route struct {
 }
 
 type regexpHandler struct {
-	getRoutes  []*route
-	postRoutes []*route
+	getRoutes    []*route
+	postRoutes   []*route
+	putRoutes    []*route
+	deleteRoutes []*route
 
 	notFoundHandler httpHandler
 }
@@ -38,16 +40,26 @@ func newCraterHandler() *regexpHandler {
 	return &regexpHandler{
 		getRoutes:       make([]*route, 0),
 		postRoutes:      make([]*route, 0),
+		putRoutes:       make([]*route, 0),
+		deleteRoutes:    make([]*route, 0),
 		notFoundHandler: http.NotFound,
 	}
 }
 
-func (h *regexpHandler) handleGet(pattern *regexp.Regexp, handler func(http.ResponseWriter, *http.Request)) {
+func (h *regexpHandler) handleGet(pattern *regexp.Regexp, handler httpHandler) {
 	h.getRoutes = append(h.getRoutes, &route{pattern, http.HandlerFunc(handler)})
 }
 
-func (h *regexpHandler) handlePost(pattern *regexp.Regexp, handler func(http.ResponseWriter, *http.Request)) {
+func (h *regexpHandler) handlePost(pattern *regexp.Regexp, handler httpHandler) {
 	h.postRoutes = append(h.postRoutes, &route{pattern, http.HandlerFunc(handler)})
+}
+
+func (h *regexpHandler) handlePut(pattern *regexp.Regexp, handler httpHandler) {
+	h.putRoutes = append(h.putRoutes, &route{pattern, http.HandlerFunc(handler)})
+}
+
+func (h *regexpHandler) handleDelete(pattern *regexp.Regexp, handler httpHandler) {
+	h.deleteRoutes = append(h.deleteRoutes, &route{pattern, http.HandlerFunc(handler)})
 }
 
 func (h *regexpHandler) handleStatic(pattern *regexp.Regexp, url string, fs http.FileSystem) {
@@ -61,6 +73,10 @@ func (h *regexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		routes = h.getRoutes
 	case method_POST:
 		routes = h.postRoutes
+	case method_PUT:
+		routes = h.putRoutes
+	case method_DELETE:
+		routes = h.deleteRoutes
 	}
 
 	urlPath := r.URL.Path

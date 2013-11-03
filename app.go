@@ -82,6 +82,30 @@ func (app App) Post(url string, handler handlerFunc) {
 	})
 }
 
+// Put handles PUT requests
+func (app App) Put(url string, handler handlerFunc) {
+	app.craterRequestHandler.handlePut(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
+		req := &Request{}
+		req.init(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
+		res := &Response{}
+		handler(req, res)
+
+		app.sendResponse(w, r, res)
+	})
+}
+
+// Delete handles DELETE requests
+func (app App) Delete(url string, handler handlerFunc) {
+	app.craterRequestHandler.handleDelete(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
+		req := &Request{}
+		req.init(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
+		res := &Response{}
+		handler(req, res)
+
+		app.sendResponse(w, r, res)
+	})
+}
+
 // NotFound overrides 404 status result
 func (app App) NotFound(handler handlerFunc) {
 	app.craterRequestHandler.notFoundHandler = func(w http.ResponseWriter, r *http.Request) {
