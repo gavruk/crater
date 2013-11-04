@@ -14,7 +14,7 @@ import (
 func Test_init(t *testing.T) {
 	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session), new(cookie.CookieManager))
 
-	if req.Raw == nil {
+	if req.raw == nil {
 		t.Error("http request was not set")
 	}
 	if req.Cookie == nil {

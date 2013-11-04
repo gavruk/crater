@@ -11,7 +11,7 @@ import (
 
 // Request handles request data
 type Request struct {
-	Raw *http.Request
+	raw *http.Request
 
 	Values  map[string][]string
 	Session *session.Session
@@ -20,7 +20,7 @@ type Request struct {
 
 func newRequest(r *http.Request, s *session.Session, c *cookie.CookieManager) *Request {
 	request := new(Request)
-	request.Raw = r
+	request.raw = r
 	request.Session = s
 	request.Cookie = c
 	r.ParseForm()
@@ -64,9 +64,9 @@ func (req *Request) GetArray(name string) ([]string, bool) {
 }
 
 func (req *Request) Parse(s interface{}) error {
-	ct := req.Raw.Header.Get("Content-Type")
+	ct := req.raw.Header.Get("Content-Type")
 	if ct == ct_JSON {
-		jsonDecoder := json.NewDecoder(req.Raw.Body)
+		jsonDecoder := json.NewDecoder(req.raw.Body)
 		return jsonDecoder.Decode(s)
 	} else {
 		return schemaDecoder.Decode(s, req.Values)

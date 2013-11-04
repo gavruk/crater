@@ -14,7 +14,7 @@ const (
 
 // Response handles response data
 type Response struct {
-	Raw http.ResponseWriter
+	raw http.ResponseWriter
 
 	templateName   string
 	viewName       string
@@ -27,7 +27,7 @@ type Response struct {
 
 func newResponse(w http.ResponseWriter) *Response {
 	res := new(Response)
-	res.Raw = w
+	res.raw = w
 	return res
 }
 
