@@ -11,20 +11,21 @@ import (
 
 // Request handles request data
 type Request struct {
-	httpRequest *http.Request
+	Raw *http.Request
 
 	Values  map[string][]string
 	Session *session.Session
 	Cookie  *cookie.CookieManager
 }
 
-func (req *Request) init(r *http.Request, s *session.Session, c *cookie.CookieManager) {
-	req.httpRequest = r
-	req.Session = s
-	req.Cookie = c
-
+func newRequest(r *http.Request, s *session.Session, c *cookie.CookieManager) *Request {
+	request := new(Request)
+	request.Raw = r
+	request.Session = s
+	request.Cookie = c
 	r.ParseForm()
-	req.Values = r.Form
+	request.Values = r.Form
+	return request
 }
 
 // GetString returns query param as string
@@ -63,9 +64,9 @@ func (req *Request) GetArray(name string) ([]string, bool) {
 }
 
 func (req *Request) Parse(s interface{}) error {
-	ct := req.httpRequest.Header.Get("Content-Type")
+	ct := req.Raw.Header.Get("Content-Type")
 	if ct == ct_JSON {
-		jsonDecoder := json.NewDecoder(req.httpRequest.Body)
+		jsonDecoder := json.NewDecoder(req.Raw.Body)
 		return jsonDecoder.Decode(s)
 	} else {
 		return schemaDecoder.Decode(s, req.Values)

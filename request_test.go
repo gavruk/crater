@@ -12,10 +12,9 @@ import (
 )
 
 func Test_init(t *testing.T) {
-	req := Request{}
-	req.init(newHttpRequest("GET", "localhost:8080/"), new(session.Session), new(cookie.CookieManager))
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session), new(cookie.CookieManager))
 
-	if req.httpRequest == nil {
+	if req.Raw == nil {
 		t.Error("http request was not set")
 	}
 	if req.Cookie == nil {
@@ -30,7 +29,7 @@ func Test_init(t *testing.T) {
 }
 
 func TestGetStringSingleValueInSlice(t *testing.T) {
-	req := Request{}
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session), new(cookie.CookieManager))
 	req.Values = map[string][]string{
 		"Name": {"Alex"},
 	}
@@ -44,7 +43,7 @@ func TestGetStringSingleValueInSlice(t *testing.T) {
 }
 
 func TestGetStringMultipleValuesInSlice(t *testing.T) {
-	req := Request{}
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session), new(cookie.CookieManager))
 	req.Values = map[string][]string{
 		"Name": {"Scott", "Peter", "Bill"},
 	}
@@ -58,7 +57,7 @@ func TestGetStringMultipleValuesInSlice(t *testing.T) {
 }
 
 func TestGetStringEmptySlice(t *testing.T) {
-	req := Request{}
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session), new(cookie.CookieManager))
 	req.Values = map[string][]string{
 		"Name": {},
 	}
@@ -72,7 +71,7 @@ func TestGetStringEmptySlice(t *testing.T) {
 }
 
 func TestGetStringIfNotFound(t *testing.T) {
-	req := Request{}
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session), new(cookie.CookieManager))
 	req.Values = map[string][]string{
 		"Name": {},
 	}
@@ -86,7 +85,7 @@ func TestGetStringIfNotFound(t *testing.T) {
 }
 
 func TestGetArraySingleValueInSlice(t *testing.T) {
-	req := Request{}
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session), new(cookie.CookieManager))
 	req.Values = map[string][]string{
 		"Name": {"Alex"},
 	}
@@ -106,7 +105,7 @@ func TestGetArraySingleValueInSlice(t *testing.T) {
 }
 
 func TestGetArrayMultipleValuesInSlice(t *testing.T) {
-	req := Request{}
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session), new(cookie.CookieManager))
 	req.Values = map[string][]string{
 		"Name": {"Scott", "Peter", "Bill"},
 	}
@@ -126,7 +125,7 @@ func TestGetArrayMultipleValuesInSlice(t *testing.T) {
 }
 
 func TestGetArrayEmptySlice(t *testing.T) {
-	req := Request{}
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session), new(cookie.CookieManager))
 	req.Values = map[string][]string{
 		"Name": {},
 	}
@@ -143,7 +142,7 @@ func TestGetArrayEmptySlice(t *testing.T) {
 }
 
 func TestGetArrayIfNotFound(t *testing.T) {
-	req := Request{}
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session), new(cookie.CookieManager))
 	req.Values = map[string][]string{
 		"Name": {},
 	}
@@ -169,8 +168,7 @@ func TestParseContentTypeJson(t *testing.T) {
 	r.Body = ioutil.NopCloser(bytes.NewReader(jsonBytes))
 	r.Header.Add("Content-Type", "application/json")
 
-	req := Request{}
-	req.init(r, new(session.Session), new(cookie.CookieManager))
+	req := newRequest(r, new(session.Session), new(cookie.CookieManager))
 
 	u := new(User)
 	req.Parse(u)
@@ -189,8 +187,7 @@ func TestParseFormValues(t *testing.T) {
 	r := newHttpRequest("GET", "localhost:8080/")
 	r.Form = formValues
 
-	req := Request{}
-	req.init(r, new(session.Session), new(cookie.CookieManager))
+	req := newRequest(r, new(session.Session), new(cookie.CookieManager))
 
 	u := new(User)
 	req.Parse(u)

@@ -1,5 +1,9 @@
 package crater
 
+import (
+	"net/http"
+)
+
 const (
 	response_template = 1
 	response_view     = 2
@@ -10,6 +14,8 @@ const (
 
 // Response handles response data
 type Response struct {
+	Raw http.ResponseWriter
+
 	templateName   string
 	viewName       string
 	model          interface{}
@@ -17,6 +23,12 @@ type Response struct {
 	responseString string
 
 	responseType int
+}
+
+func newResponse(w http.ResponseWriter) *Response {
+	res := new(Response)
+	res.Raw = w
+	return res
 }
 
 // Render renders html with model
