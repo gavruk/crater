@@ -72,3 +72,7 @@ func (req *Request) Parse(s interface{}) error {
 		return schemaDecoder.Decode(s, req.Values)
 	}
 }
+
+func (req *Request) Header() http.Header {
+	return req.raw.Header
+}
