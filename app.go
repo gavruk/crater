@@ -19,12 +19,14 @@ type App struct {
 	craterRequestHandler *regexpHandler
 	htmlTemplates        *craterTemplate
 	settings             *Settings
+	middleware           []handlerFunc
 }
 
 func NewApp(settings *Settings) App {
 	app := App{}
 	app.craterRequestHandler = newCraterHandler()
 	app.htmlTemplates = &craterTemplate{}
+	app.middleware = make([]handlerFunc, 0)
 	if settings != nil {
 		app.settings = &Settings{}
 		app.Settings(settings)
@@ -54,71 +56,80 @@ func (app *App) Settings(settings *Settings) {
 	}
 }
 
-func (app App) UseSessionStore(store session.SessionStore, timeout time.Duration) {
+func (app *App) UseSessionStore(store session.SessionStore, timeout time.Duration) {
 	sessionManager = session.NewSessionManager(store, timeout)
 }
 
+func (app *App) Use(handler handlerFunc) {
+	app.middleware = append(app.middleware, handler)
+}
+
 // Get handles GET requests
-func (app App) Get(url string, handler handlerFunc) {
+func (app *App) Get(url string, handler handlerFunc) {
 	app.craterRequestHandler.handleGet(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
 		res := newResponse(w)
+
+		if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
+			return
+		}
+
 		handler(req, res)
 
-		app.sendResponse(w, r, res)
+		app.sendResponse(req, res)
 	})
 }
 
 // Post handles POST requests
-func (app App) Post(url string, handler handlerFunc) {
+func (app *App) Post(url string, handler handlerFunc) {
 	app.craterRequestHandler.handlePost(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
 		res := newResponse(w)
 		handler(req, res)
 
-		app.sendResponse(w, r, res)
+		app.sendResponse(req, res)
 	})
 }
 
 // Put handles PUT requests
-func (app App) Put(url string, handler handlerFunc) {
+func (app *App) Put(url string, handler handlerFunc) {
 	app.craterRequestHandler.handlePut(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
 		res := newResponse(w)
 		handler(req, res)
 
-		app.sendResponse(w, r, res)
+		app.sendResponse(req, res)
 	})
 }
 
 // Delete handles DELETE requests
-func (app App) Delete(url string, handler handlerFunc) {
+func (app *App) Delete(url string, handler handlerFunc) {
 	app.craterRequestHandler.handleDelete(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
 		res := newResponse(w)
 		handler(req, res)
 
-		app.sendResponse(w, r, res)
+		app.sendResponse(req, res)
 	})
 }
 
 // NotFound overrides 404 status result
-func (app App) NotFound(handler handlerFunc) {
+func (app *App) NotFound(handler handlerFunc) {
 	app.craterRequestHandler.notFoundHandler = func(w http.ResponseWriter, r *http.Request) {
 		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
 		res := newResponse(w)
 		handler(req, res)
 
-		app.sendResponse(w, r, res)
+		app.sendResponse(req, res)
 	}
 }
 
 // HandleStaticContent handles Statis Content
-func (app App) HandleStaticContent(url string) {
+func (app *App) HandleStaticContent(url string) {
 	app.craterRequestHandler.handleStatic(regexp.MustCompile("^"+url), url, http.Dir(app.settings.StaticFilesPath))
 }
 
-func (app App) Listen(serverURL string) {
+func (app *App) Listen(serverURL string) {
 	err := app.htmlTemplates.parseFolder(app.settings.ViewsPath, app.settings.ViewExtension)
 	if err != nil {
 		panic(err)
@@ -127,32 +138,32 @@ func (app App) Listen(serverURL string) {
 	http.ListenAndServe(serverURL, app.craterRequestHandler)
 }
 
-func (app App) sendResponse(w http.ResponseWriter, r *http.Request, res *Response) {
+func (app *App) sendResponse(req *Request, res *Response) {
 	switch res.responseType {
 	case response_template:
-		app.sendTemplate(w, res.model, res.templateName)
+		app.sendTemplate(res.raw, res.model, res.templateName)
 	case response_view:
-		app.sendView(w, res.model, res.viewName, app.settings.ViewExtension)
+		app.sendView(res.raw, res.model, res.viewName, app.settings.ViewExtension)
 	case response_json:
-		app.sendJson(w, res.model)
+		app.sendJson(res.raw, res.model)
 	case response_redirect:
-		app.redirect(w, r, res.redirectUrl)
+		app.redirect(res.raw, req.raw, res.redirectUrl)
 	case response_string:
-		app.sendString(w, res.responseString)
+		app.sendString(res.raw, res.responseString)
 	}
 }
 
-func (app App) sendJson(w http.ResponseWriter, model interface{}) {
+func (app *App) sendJson(w http.ResponseWriter, model interface{}) {
 	w.Header().Set("Content-Type", ct_JSON)
 	jsonObj, _ := json.Marshal(model)
 	fmt.Fprint(w, string(jsonObj))
 }
 
-func (app App) sendString(w http.ResponseWriter, str string) {
+func (app *App) sendString(w http.ResponseWriter, str string) {
 	fmt.Fprint(w, str)
 }
 
-func (app App) sendTemplate(w http.ResponseWriter, model interface{}, templateName string) {
+func (app *App) sendTemplate(w http.ResponseWriter, model interface{}, templateName string) {
 	if templateName == "" {
 		panic("crater: TemplateName cannot be empty string")
 	}
@@ -160,7 +171,7 @@ func (app App) sendTemplate(w http.ResponseWriter, model interface{}, templateNa
 	app.htmlTemplates.render(w, templateName, model)
 }
 
-func (app App) sendView(w http.ResponseWriter, model interface{}, viewName string, extension string) {
+func (app *App) sendView(w http.ResponseWriter, model interface{}, viewName string, extension string) {
 	if viewName == "" {
 		panic("crater: ViewName cannot be empty string")
 	}
@@ -169,10 +180,23 @@ func (app App) sendView(w http.ResponseWriter, model interface{}, viewName strin
 	app.htmlTemplates.renderView(w, filePath, model)
 }
 
-func (app App) redirect(w http.ResponseWriter, r *http.Request, url string) {
+func (app *App) redirect(w http.ResponseWriter, r *http.Request, url string) {
 	if url == "" {
 		panic("crater: RedirectUrl cannot be empty string")
 	}
 
 	http.Redirect(w, r, url, http.StatusMovedPermanently)
+}
+
+func (app *App) serveMiddleware(req *Request, res *Response) (returnsRespose bool) {
+	returnsRespose = false
+	for _, mw := range app.middleware {
+		mw(req, res)
+		if res.responseType != 0 {
+			app.sendResponse(req, res)
+			returnsRespose = true
+			break
+		}
+	}
+	return
 }
