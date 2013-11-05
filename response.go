@@ -35,6 +35,10 @@ func (res *Response) Header() http.Header {
 	return res.raw.Header()
 }
 
+func (res *Response) WriteHeader(code int) {
+	res.raw.WriteHeader(code)
+}
+
 // Render renders html with model
 func (res *Response) Render(viewName string, model interface{}) {
 	res.viewName = viewName
