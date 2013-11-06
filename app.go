@@ -85,6 +85,11 @@ func (app *App) Post(url string, handler handlerFunc) {
 	app.craterRequestHandler.handlePost(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
 		res := newResponse(w)
+
+		if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
+			return
+		}
+
 		handler(req, res)
 
 		app.sendResponse(req, res)
@@ -96,6 +101,11 @@ func (app *App) Put(url string, handler handlerFunc) {
 	app.craterRequestHandler.handlePut(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
 		res := newResponse(w)
+
+		if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
+			return
+		}
+
 		handler(req, res)
 
 		app.sendResponse(req, res)
@@ -107,6 +117,11 @@ func (app *App) Delete(url string, handler handlerFunc) {
 	app.craterRequestHandler.handleDelete(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
 		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
 		res := newResponse(w)
+
+		if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
+			return
+		}
+
 		handler(req, res)
 
 		app.sendResponse(req, res)
