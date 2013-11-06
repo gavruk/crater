@@ -3,6 +3,7 @@ package crater
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/gavruk/crater/cookie"
@@ -16,6 +17,7 @@ type Request struct {
 	Values  map[string][]string
 	Session *session.Session
 	Cookie  *cookie.CookieManager
+	URL     *url.URL
 }
 
 func newRequest(r *http.Request, s *session.Session, c *cookie.CookieManager) *Request {
@@ -23,6 +25,7 @@ func newRequest(r *http.Request, s *session.Session, c *cookie.CookieManager) *R
 	request.raw = r
 	request.Session = s
 	request.Cookie = c
+	request.URL = r.URL
 	r.ParseForm()
 	request.Values = r.Form
 	return request
