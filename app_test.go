@@ -8,7 +8,7 @@ import (
 
 func TestGet(t *testing.T) {
 	url := "/url"
-	app := NewApp(nil)
+	app := NewApp()
 	app.Get(url, func(req *Request, res *Response) {
 		res.Send("<h1>html</h1>")
 	})
@@ -30,7 +30,7 @@ func TestGet(t *testing.T) {
 
 func TestPost(t *testing.T) {
 	url := "/url"
-	app := NewApp(nil)
+	app := NewApp()
 	app.Post(url, func(req *Request, res *Response) {
 		res.Send("<h1>html</h1>")
 	})
@@ -51,7 +51,7 @@ func TestPost(t *testing.T) {
 }
 
 func TestUseSessionStore(t *testing.T) {
-	app := NewApp(nil)
+	app := NewApp()
 	store := session.NewInMemorySessionStore()
 	timeout := time.Minute
 
@@ -65,7 +65,7 @@ func TestUseSessionStore(t *testing.T) {
 
 func TestHandleStaticContent(t *testing.T) {
 	content := "/content"
-	app := NewApp(nil)
+	app := NewApp()
 	app.HandleStaticContent("/content")
 
 	if len(app.craterRequestHandler.postRoutes) != 0 {

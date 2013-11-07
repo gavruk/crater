@@ -21,17 +21,12 @@ type App struct {
 	middleware           []handlerFunc
 }
 
-func NewApp(settings *Settings) App {
+func NewApp() App {
 	app := App{}
 	app.craterRequestHandler = newCraterHandler()
 	app.htmlTemplates = &craterTemplate{}
 	app.middleware = make([]handlerFunc, 0)
-	if settings != nil {
-		app.settings = &Settings{}
-		app.Settings(settings)
-	} else {
-		app.settings = DefaultSettings()
-	}
+	app.settings = DefaultSettings()
 
 	return app
 }
