@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/gavruk/crater/session"
 )
 
 // Request handles request data
@@ -14,14 +12,14 @@ type Request struct {
 	raw *http.Request
 
 	Values  map[string][]string
-	Session *session.Session
+	Session *Session
 	URL     *url.URL
 }
 
-func newRequest(r *http.Request, s *session.Session) *Request {
+func newRequest(r *http.Request) *Request {
 	request := new(Request)
 	request.raw = r
-	request.Session = s
+	request.Session = nil
 	request.URL = r.URL
 	r.ParseForm()
 	request.Values = r.Form

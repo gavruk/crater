@@ -1,9 +1,7 @@
 package crater
 
 import (
-	"github.com/gavruk/crater/session"
 	"testing"
-	"time"
 )
 
 func TestGet(t *testing.T) {
@@ -47,19 +45,6 @@ func TestPost(t *testing.T) {
 	}
 	if !route.pattern.MatchString(url) {
 		t.Error("Route pattern doesn't match url")
-	}
-}
-
-func TestUseSessionStore(t *testing.T) {
-	app := NewApp()
-	store := session.NewInMemorySessionStore()
-	timeout := time.Minute
-
-	sessionManager = nil
-	app.UseSessionStore(store, timeout)
-
-	if sessionManager == nil {
-		t.Error("Store was not set correctly")
 	}
 }
 

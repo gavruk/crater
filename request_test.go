@@ -6,21 +6,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
-
-	"github.com/gavruk/crater/session"
 )
 
 func Test_init(t *testing.T) {
-	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session))
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"))
 
 	if req.raw == nil {
 		t.Error("http request was not set")
-	}
-	if req.Cookie == nil {
-		t.Error("cookie was not set")
-	}
-	if req.Session == nil {
-		t.Error("session was not set")
 	}
 	if req.Values == nil {
 		t.Error("form data was not set")
@@ -28,7 +20,7 @@ func Test_init(t *testing.T) {
 }
 
 func TestGetStringSingleValueInSlice(t *testing.T) {
-	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session))
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"))
 	req.Values = map[string][]string{
 		"Name": {"Alex"},
 	}
@@ -42,7 +34,7 @@ func TestGetStringSingleValueInSlice(t *testing.T) {
 }
 
 func TestGetStringMultipleValuesInSlice(t *testing.T) {
-	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session))
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"))
 	req.Values = map[string][]string{
 		"Name": {"Scott", "Peter", "Bill"},
 	}
@@ -56,7 +48,7 @@ func TestGetStringMultipleValuesInSlice(t *testing.T) {
 }
 
 func TestGetStringEmptySlice(t *testing.T) {
-	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session))
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"))
 	req.Values = map[string][]string{
 		"Name": {},
 	}
@@ -70,7 +62,7 @@ func TestGetStringEmptySlice(t *testing.T) {
 }
 
 func TestGetStringIfNotFound(t *testing.T) {
-	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session))
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"))
 	req.Values = map[string][]string{
 		"Name": {},
 	}
@@ -84,7 +76,7 @@ func TestGetStringIfNotFound(t *testing.T) {
 }
 
 func TestGetArraySingleValueInSlice(t *testing.T) {
-	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session))
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"))
 	req.Values = map[string][]string{
 		"Name": {"Alex"},
 	}
@@ -104,7 +96,7 @@ func TestGetArraySingleValueInSlice(t *testing.T) {
 }
 
 func TestGetArrayMultipleValuesInSlice(t *testing.T) {
-	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session))
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"))
 	req.Values = map[string][]string{
 		"Name": {"Scott", "Peter", "Bill"},
 	}
@@ -124,7 +116,7 @@ func TestGetArrayMultipleValuesInSlice(t *testing.T) {
 }
 
 func TestGetArrayEmptySlice(t *testing.T) {
-	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session))
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"))
 	req.Values = map[string][]string{
 		"Name": {},
 	}
@@ -141,7 +133,7 @@ func TestGetArrayEmptySlice(t *testing.T) {
 }
 
 func TestGetArrayIfNotFound(t *testing.T) {
-	req := newRequest(newHttpRequest("GET", "localhost:8080/"), new(session.Session))
+	req := newRequest(newHttpRequest("GET", "localhost:8080/"))
 	req.Values = map[string][]string{
 		"Name": {},
 	}
@@ -167,7 +159,7 @@ func TestParseContentTypeJson(t *testing.T) {
 	r.Body = ioutil.NopCloser(bytes.NewReader(jsonBytes))
 	r.Header.Add("Content-Type", "application/json")
 
-	req := newRequest(r, new(session.Session))
+	req := newRequest(r)
 
 	u := new(User)
 	req.Parse(u)
@@ -186,7 +178,7 @@ func TestParseFormValues(t *testing.T) {
 	r := newHttpRequest("GET", "localhost:8080/")
 	r.Form = formValues
 
-	req := newRequest(r, new(session.Session))
+	req := newRequest(r)
 
 	u := new(User)
 	req.Parse(u)
