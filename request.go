@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/gavruk/crater/cookie"
 	"github.com/gavruk/crater/session"
 )
 
@@ -16,15 +15,13 @@ type Request struct {
 
 	Values  map[string][]string
 	Session *session.Session
-	Cookie  *cookie.CookieManager
 	URL     *url.URL
 }
 
-func newRequest(r *http.Request, s *session.Session, c *cookie.CookieManager) *Request {
+func newRequest(r *http.Request, s *session.Session) *Request {
 	request := new(Request)
 	request.raw = r
 	request.Session = s
-	request.Cookie = c
 	request.URL = r.URL
 	r.ParseForm()
 	request.Values = r.Form
@@ -78,4 +75,9 @@ func (req *Request) Parse(s interface{}) error {
 
 func (req *Request) Header() http.Header {
 	return req.raw.Header
+}
+
+func (req *Request) Cookie(name string) *http.Cookie {
+	cookie, _ := req.raw.Cookie(name)
+	return cookie
 }

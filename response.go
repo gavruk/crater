@@ -39,6 +39,10 @@ func (res *Response) WriteHeader(code int) {
 	res.raw.WriteHeader(code)
 }
 
+func (res *Response) SetCookie(cookie *http.Cookie) {
+	http.SetCookie(res.raw, cookie)
+}
+
 // Render renders html with model
 func (res *Response) Render(viewName string, model interface{}) {
 	res.viewName = viewName

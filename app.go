@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/gavruk/crater/cookie"
 	"github.com/gavruk/crater/session"
 )
 
@@ -67,7 +66,7 @@ func (app *App) Use(handler handlerFunc) {
 // Get handles GET requests
 func (app *App) Get(url string, handler handlerFunc) {
 	app.craterRequestHandler.handleGet(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
-		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
+		req := newRequest(r, sessionManager.GetSession(w, r))
 		res := newResponse(w)
 
 		if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
@@ -83,7 +82,7 @@ func (app *App) Get(url string, handler handlerFunc) {
 // Post handles POST requests
 func (app *App) Post(url string, handler handlerFunc) {
 	app.craterRequestHandler.handlePost(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
-		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
+		req := newRequest(r, sessionManager.GetSession(w, r))
 		res := newResponse(w)
 
 		if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
@@ -99,7 +98,7 @@ func (app *App) Post(url string, handler handlerFunc) {
 // Put handles PUT requests
 func (app *App) Put(url string, handler handlerFunc) {
 	app.craterRequestHandler.handlePut(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
-		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
+		req := newRequest(r, sessionManager.GetSession(w, r))
 		res := newResponse(w)
 
 		if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
@@ -115,7 +114,7 @@ func (app *App) Put(url string, handler handlerFunc) {
 // Delete handles DELETE requests
 func (app *App) Delete(url string, handler handlerFunc) {
 	app.craterRequestHandler.handleDelete(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
-		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
+		req := newRequest(r, sessionManager.GetSession(w, r))
 		res := newResponse(w)
 
 		if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
@@ -131,7 +130,7 @@ func (app *App) Delete(url string, handler handlerFunc) {
 // NotFound overrides 404 status result
 func (app *App) NotFound(handler handlerFunc) {
 	app.craterRequestHandler.notFoundHandler = func(w http.ResponseWriter, r *http.Request) {
-		req := newRequest(r, sessionManager.GetSession(w, r), cookie.NewCookieManager(w, r))
+		req := newRequest(r, sessionManager.GetSession(w, r))
 		res := newResponse(w)
 		handler(req, res)
 
