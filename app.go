@@ -187,7 +187,7 @@ func (app *App) redirect(w http.ResponseWriter, r *http.Request, url string) {
 		panic("crater: RedirectUrl cannot be empty string")
 	}
 
-	http.Redirect(w, r, url, http.StatusMovedPermanently)
+	http.Redirect(w, r, url, http.StatusFound)
 }
 
 func (app *App) serveMiddleware(req *Request, res *Response) (returnsRespose bool) {
