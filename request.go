@@ -12,6 +12,7 @@ type Request struct {
 	raw *http.Request
 
 	Values  map[string][]string
+	Header  http.Header
 	Session *Session
 	URL     *url.URL
 }
@@ -19,6 +20,7 @@ type Request struct {
 func newRequest(r *http.Request) *Request {
 	request := new(Request)
 	request.raw = r
+	request.Header = r.Header
 	request.Session = nil
 	request.URL = r.URL
 	r.ParseForm()
@@ -69,10 +71,6 @@ func (req *Request) Parse(s interface{}) error {
 	} else {
 		return schemaDecoder.Decode(s, req.Values)
 	}
-}
-
-func (req *Request) Header() http.Header {
-	return req.raw.Header
 }
 
 func (req *Request) Cookie(name string) *http.Cookie {

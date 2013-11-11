@@ -21,18 +21,16 @@ type Response struct {
 	model          interface{}
 	redirectUrl    string
 	responseString string
+	responseType   int
 
-	responseType int
+	Header http.Header
 }
 
 func newResponse(w http.ResponseWriter) *Response {
 	res := new(Response)
 	res.raw = w
+	res.Header = w.Header()
 	return res
-}
-
-func (res *Response) Header() http.Header {
-	return res.raw.Header()
 }
 
 func (res *Response) WriteHeader(code int) {
