@@ -16,6 +16,7 @@ type App struct {
 	htmlTemplates        *craterTemplate
 	settings             *Settings
 	middleware           []handlerFunc
+	craterRouter         *router
 }
 
 func NewApp() App {
@@ -23,12 +24,13 @@ func NewApp() App {
 	app.craterRequestHandler = newCraterHandler()
 	app.htmlTemplates = &craterTemplate{}
 	app.middleware = make([]handlerFunc, 0)
+	app.craterRouter = new(router)
 	app.settings = DefaultSettings()
 
 	return app
 }
 
-// Settings recieves settings application
+// Settings recieves settings for application
 func (app *App) Settings(settings *Settings) {
 	if settings.ViewsPath == "" {
 		app.settings.ViewsPath = "."
@@ -53,72 +55,40 @@ func (app *App) Use(handler handlerFunc) {
 
 // Get handles GET requests
 func (app *App) Get(url string, handler handlerFunc) {
-	app.craterRequestHandler.handleGet(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
-		req := newRequest(r)
-		res := newResponse(w)
-
-		if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
-			return
-		}
-
-		handler(req, res)
-
-		app.sendResponse(req, res)
+	requestRegexp := regexp.MustCompile("^" + url + "$")
+	app.craterRequestHandler.handleGet(requestRegexp, func(w http.ResponseWriter, r *http.Request) {
+		app.serveRequest(w, r, handler, requestRegexp)
 	})
 }
 
 // Post handles POST requests
 func (app *App) Post(url string, handler handlerFunc) {
-	app.craterRequestHandler.handlePost(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
-		req := newRequest(r)
-		res := newResponse(w)
-
-		if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
-			return
-		}
-
-		handler(req, res)
-
-		app.sendResponse(req, res)
+	requestRegexp := regexp.MustCompile("^" + url + "$")
+	app.craterRequestHandler.handlePost(requestRegexp, func(w http.ResponseWriter, r *http.Request) {
+		app.serveRequest(w, r, handler, requestRegexp)
 	})
 }
 
 // Put handles PUT requests
 func (app *App) Put(url string, handler handlerFunc) {
-	app.craterRequestHandler.handlePut(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
-		req := newRequest(r)
-		res := newResponse(w)
-
-		if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
-			return
-		}
-
-		handler(req, res)
-
-		app.sendResponse(req, res)
+	requestRegexp := regexp.MustCompile("^" + url + "$")
+	app.craterRequestHandler.handlePut(requestRegexp, func(w http.ResponseWriter, r *http.Request) {
+		app.serveRequest(w, r, handler, requestRegexp)
 	})
 }
 
 // Delete handles DELETE requests
 func (app *App) Delete(url string, handler handlerFunc) {
-	app.craterRequestHandler.handleDelete(regexp.MustCompile("^"+url+"$"), func(w http.ResponseWriter, r *http.Request) {
-		req := newRequest(r)
-		res := newResponse(w)
-
-		if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
-			return
-		}
-
-		handler(req, res)
-
-		app.sendResponse(req, res)
+	requestRegexp := regexp.MustCompile("^" + url + "$")
+	app.craterRequestHandler.handleDelete(requestRegexp, func(w http.ResponseWriter, r *http.Request) {
+		app.serveRequest(w, r, handler, requestRegexp)
 	})
 }
 
 // NotFound overrides 404 status result
 func (app *App) NotFound(handler handlerFunc) {
 	app.craterRequestHandler.notFoundHandler = func(w http.ResponseWriter, r *http.Request) {
-		req := newRequest(r)
+		req := newRequest(r, make(map[string]string))
 		res := newResponse(w)
 		handler(req, res)
 
@@ -138,6 +108,20 @@ func (app *App) Listen(serverURL string) {
 	}
 
 	http.ListenAndServe(serverURL, app.craterRequestHandler)
+}
+
+func (app *App) serveRequest(w http.ResponseWriter, r *http.Request, handler handlerFunc, requestRegexp *regexp.Regexp) {
+	vars := app.craterRouter.GetValues(r.URL.Path, requestRegexp)
+	req := newRequest(r, vars)
+	res := newResponse(w)
+
+	if returnsResponse := app.serveMiddleware(req, res); returnsResponse {
+		return
+	}
+
+	handler(req, res)
+
+	app.sendResponse(req, res)
 }
 
 func (app *App) sendResponse(req *Request, res *Response) {

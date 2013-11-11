@@ -12,12 +12,13 @@ type Request struct {
 	raw *http.Request
 
 	Values  map[string][]string
+	Vars    map[string]string
 	Header  http.Header
 	Session *Session
 	URL     *url.URL
 }
 
-func newRequest(r *http.Request) *Request {
+func newRequest(r *http.Request, vars map[string]string) *Request {
 	request := new(Request)
 	request.raw = r
 	request.Header = r.Header
@@ -25,6 +26,7 @@ func newRequest(r *http.Request) *Request {
 	request.URL = r.URL
 	r.ParseForm()
 	request.Values = r.Form
+	request.Vars = vars
 	return request
 }
 

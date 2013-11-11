@@ -138,7 +138,7 @@ func TestGetSession_NoSessionAndCookie_SessionShouldBeInitiated(t *testing.T) {
 
 func newTestRequest(method, url string) *Request {
 	r, _ := http.NewRequest(method, url, nil)
-	req := newRequest(r)
+	req := newRequest(r, make(map[string]string))
 	return req
 }
 
