@@ -55,7 +55,7 @@ func (app *App) Use(handler handlerFunc) {
 
 // Get handles GET requests
 func (app *App) Get(url string, handler handlerFunc) {
-	requestRegexp := regexp.MustCompile("^" + url + "$")
+	requestRegexp := app.craterRouter.normalizeRoute(url)
 	app.craterRequestHandler.handleGet(requestRegexp, func(w http.ResponseWriter, r *http.Request) {
 		app.serveRequest(w, r, handler, requestRegexp)
 	})
@@ -63,7 +63,7 @@ func (app *App) Get(url string, handler handlerFunc) {
 
 // Post handles POST requests
 func (app *App) Post(url string, handler handlerFunc) {
-	requestRegexp := regexp.MustCompile("^" + url + "$")
+	requestRegexp := app.craterRouter.normalizeRoute(url)
 	app.craterRequestHandler.handlePost(requestRegexp, func(w http.ResponseWriter, r *http.Request) {
 		app.serveRequest(w, r, handler, requestRegexp)
 	})
@@ -71,7 +71,7 @@ func (app *App) Post(url string, handler handlerFunc) {
 
 // Put handles PUT requests
 func (app *App) Put(url string, handler handlerFunc) {
-	requestRegexp := regexp.MustCompile("^" + url + "$")
+	requestRegexp := app.craterRouter.normalizeRoute(url)
 	app.craterRequestHandler.handlePut(requestRegexp, func(w http.ResponseWriter, r *http.Request) {
 		app.serveRequest(w, r, handler, requestRegexp)
 	})
@@ -79,7 +79,7 @@ func (app *App) Put(url string, handler handlerFunc) {
 
 // Delete handles DELETE requests
 func (app *App) Delete(url string, handler handlerFunc) {
-	requestRegexp := regexp.MustCompile("^" + url + "$")
+	requestRegexp := app.craterRouter.normalizeRoute(url)
 	app.craterRequestHandler.handleDelete(requestRegexp, func(w http.ResponseWriter, r *http.Request) {
 		app.serveRequest(w, r, handler, requestRegexp)
 	})
@@ -111,7 +111,7 @@ func (app *App) Listen(serverURL string) {
 }
 
 func (app *App) serveRequest(w http.ResponseWriter, r *http.Request, handler handlerFunc, requestRegexp *regexp.Regexp) {
-	vars := app.craterRouter.GetValues(r.URL.Path, requestRegexp)
+	vars := app.craterRouter.getValues(r.URL.Path, requestRegexp)
 	req := newRequest(r, vars)
 	res := newResponse(w)
 
