@@ -30,7 +30,7 @@ func (r *router) getValues(url string, pattern *regexp.Regexp) map[string]string
 }
 
 func (r *router) normalizeRoute(route string) *regexp.Regexp {
-	pattern := regexp.MustCompile("{(.*)}")
+	pattern := regexp.MustCompile("{([^{}]*)}")
 	routeValues := pattern.FindAllString(route, -1)
 
 	if len(routeValues) == 0 {
