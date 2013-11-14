@@ -32,21 +32,7 @@ func NewApp() App {
 
 // Settings recieves settings for application
 func (app *App) Settings(settings *Settings) {
-	if settings.ViewsPath == "" {
-		app.settings.ViewsPath = "."
-	} else {
-		app.settings.ViewsPath = settings.ViewsPath
-	}
-	if settings.StaticFilesPath == "" {
-		app.settings.StaticFilesPath = "."
-	} else {
-		app.settings.StaticFilesPath = settings.StaticFilesPath
-	}
-	if settings.ViewExtension == "" {
-		app.settings.ViewExtension = "html"
-	} else {
-		app.settings.ViewExtension = settings.ViewExtension
-	}
+	app.settings.Update(settings)
 }
 
 func (app *App) Use(handler handlerFunc) {

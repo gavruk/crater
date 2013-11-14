@@ -15,3 +15,24 @@ func DefaultSettings() *Settings {
 	}
 	return settings
 }
+
+func (settings *Settings) Update(newSettings *Settings) {
+	if settings == nil {
+		return
+	}
+	if newSettings.ViewsPath == "" {
+		settings.ViewsPath = "."
+	} else {
+		settings.ViewsPath = newSettings.ViewsPath
+	}
+	if newSettings.StaticFilesPath == "" {
+		settings.StaticFilesPath = "."
+	} else {
+		settings.StaticFilesPath = newSettings.StaticFilesPath
+	}
+	if newSettings.ViewExtension == "" {
+		settings.ViewExtension = "html"
+	} else {
+		settings.ViewExtension = newSettings.ViewExtension
+	}
+}
