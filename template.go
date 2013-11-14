@@ -13,6 +13,8 @@ type craterTemplate struct {
 	ctemplate *template.Template
 }
 
+// parseFolder parses all files in specified extension in given folder
+// and store them in memory to allow you to render any template
 func (t *craterTemplate) parseFolder(viewPath string, extension string) error {
 	t.viewPath = viewPath
 
@@ -36,10 +38,12 @@ func (t *craterTemplate) parseFolder(viewPath string, extension string) error {
 	return nil
 }
 
+// render applies a parsed template to the specified data object
 func (t *craterTemplate) render(w http.ResponseWriter, name string, data interface{}) error {
 	return t.ctemplate.ExecuteTemplate(w, name, data)
 }
 
+// renderView applies a single html file to the specified data object
 func (t *craterTemplate) renderView(w http.ResponseWriter, path string, data interface{}) error {
 	tmpl, err := template.ParseFiles(path)
 	if err != nil {
