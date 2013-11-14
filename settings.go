@@ -2,16 +2,16 @@ package crater
 
 // Settings for you app
 type Settings struct {
-	ViewsPath       string
-	StaticFilesPath string
-	ViewExtension   string
+	ViewsPath     string
+	StaticPath    string
+	ViewExtension string
 }
 
 func DefaultSettings() *Settings {
 	settings := &Settings{
-		ViewsPath:       ".",
-		StaticFilesPath: ".",
-		ViewExtension:   "html",
+		ViewsPath:     ".",
+		StaticPath:    ".",
+		ViewExtension: "html",
 	}
 	return settings
 }
@@ -25,10 +25,10 @@ func (settings *Settings) Update(newSettings *Settings) {
 	} else {
 		settings.ViewsPath = newSettings.ViewsPath
 	}
-	if newSettings.StaticFilesPath == "" {
-		settings.StaticFilesPath = "."
+	if newSettings.StaticPath == "" {
+		settings.StaticPath = "."
 	} else {
-		settings.StaticFilesPath = newSettings.StaticFilesPath
+		settings.StaticPath = newSettings.StaticPath
 	}
 	if newSettings.ViewExtension == "" {
 		settings.ViewExtension = "html"

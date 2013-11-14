@@ -82,9 +82,9 @@ func (app *App) NotFound(handler handlerFunc) {
 	}
 }
 
-// HandleStaticContent handles Statis Content
-func (app *App) HandleStaticContent(url string) {
-	app.craterRequestHandler.handleStatic(regexp.MustCompile("^"+url), url, http.Dir(app.settings.StaticFilesPath))
+// Static handles Statis Content
+func (app *App) Static(url string) {
+	app.craterRequestHandler.handleStatic(regexp.MustCompile("^"+url), url, http.Dir(app.settings.StaticPath))
 }
 
 func (app *App) Listen(serverURL string) {
@@ -119,7 +119,7 @@ func (app *App) sendResponse(req *Request, res *Response) {
 	case response_json:
 		app.sendJson(res.raw, res.model)
 	case response_redirect:
-		app.redirect(res.raw, req.raw, res.redirectUrl)
+		app.redirect(res.raw, req.raw(), res.redirectUrl)
 	case response_string:
 		app.sendString(res.raw, res.responseString)
 	}

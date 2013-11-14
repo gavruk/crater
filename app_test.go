@@ -122,10 +122,10 @@ func TestDelete(t *testing.T) {
 	}
 }
 
-func TestHandleStaticContent(t *testing.T) {
+func TestStatic(t *testing.T) {
 	content := "/content"
 	app := NewApp()
-	app.HandleStaticContent("/content")
+	app.Static("/content")
 
 	if len(app.craterRequestHandler.getRoutes) != 1 {
 		t.Error("get routes should have 1 hander")
@@ -158,16 +158,16 @@ func TestSettings(t *testing.T) {
 	app := NewApp()
 
 	settings := &Settings{
-		ViewsPath:       "./folder",
-		StaticFilesPath: "./folder",
-		ViewExtension:   "tmpl",
+		ViewsPath:     "./folder",
+		StaticPath:    "./folder",
+		ViewExtension: "tmpl",
 	}
 	app.Settings(settings)
 
 	if app.settings.ViewsPath != settings.ViewsPath {
 		t.Error("ViewsPath was not set correctly")
 	}
-	if app.settings.StaticFilesPath != settings.StaticFilesPath {
+	if app.settings.StaticPath != settings.StaticPath {
 		t.Error("StaticFilesPath was not set correctly")
 	}
 	if app.settings.ViewExtension != settings.ViewExtension {

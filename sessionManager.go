@@ -50,7 +50,7 @@ func (manager *SessionManager) GetSession(req *Request, res *Response) *Session 
 
 func (manager *SessionManager) getSessionIdFromCookie(req *Request) (id string, found bool) {
 	id = ""
-	c := req.Cookie(sessionCookieName)
+	c, _ := req.Cookie(sessionCookieName)
 	if c != nil {
 		return c.Value, true
 	}
