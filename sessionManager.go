@@ -13,16 +13,14 @@ const (
 	sessionCookieName = "crater.SessionId"
 )
 
-// -----------------------------------
-// Session Manager
-// -----------------------------------
-
+// SessionManager manage session for current request
 type SessionManager struct {
 	store   SessionStore
 	timeout time.Duration
 	mutex   sync.RWMutex
 }
 
+// NewSessionManager creates new instance of SessionManager
 func NewSessionManager(store SessionStore, timeout time.Duration) *SessionManager {
 	manager := new(SessionManager)
 	manager.store = store
@@ -31,6 +29,8 @@ func NewSessionManager(store SessionStore, timeout time.Duration) *SessionManage
 	return manager
 }
 
+// GetSession returns session for current request
+// If there is no session, it will be created
 func (manager *SessionManager) GetSession(req *Request, res *Response) *Session {
 	manager.mutex.Lock()
 	defer manager.mutex.Unlock()
@@ -48,6 +48,7 @@ func (manager *SessionManager) GetSession(req *Request, res *Response) *Session 
 	return session
 }
 
+// getSessionIdFromCookie read cookie with session id
 func (manager *SessionManager) getSessionIdFromCookie(req *Request) (id string, found bool) {
 	id = ""
 	c, _ := req.Cookie(sessionCookieName)
@@ -57,6 +58,7 @@ func (manager *SessionManager) getSessionIdFromCookie(req *Request) (id string, 
 	return "", false
 }
 
+// initSession initialize new session
 func (manager *SessionManager) initSession(res *Response) *Session {
 	id := manager.generateId()
 	session := &Session{
@@ -75,6 +77,7 @@ func (manager *SessionManager) initSession(res *Response) *Session {
 	return session
 }
 
+// generateId generates new Id for session
 func (manager *SessionManager) generateId() string {
 	b := make([]byte, 16)
 	rand.Read(b)

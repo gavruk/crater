@@ -12,7 +12,7 @@ const (
 	response_string   = 5
 )
 
-// Response handles response data
+// Response sends data to the client
 type Response struct {
 	raw http.ResponseWriter
 
@@ -26,6 +26,7 @@ type Response struct {
 	Header http.Header
 }
 
+// newResponse creates new instance of Response
 func newResponse(w http.ResponseWriter) *Response {
 	res := new(Response)
 	res.raw = w
@@ -33,40 +34,46 @@ func newResponse(w http.ResponseWriter) *Response {
 	return res
 }
 
+// WriteHeader sends an HTTP response header with status code.
 func (res *Response) WriteHeader(code int) {
 	res.raw.WriteHeader(code)
 }
 
+// SetCookie write a cookie to the response
 func (res *Response) SetCookie(cookie *http.Cookie) {
 	http.SetCookie(res.raw, cookie)
 }
 
-// Render renders html with model
+// Render parse given html using model and send to response
+// Render use html/template to parse html
 func (res *Response) Render(viewName string, model interface{}) {
 	res.viewName = viewName
 	res.model = model
 	res.responseType = response_view
 }
 
-// RenderTemplate renders template
+// RenderTemplate parse given template by name using model and send to response
+// Template should be defined as {{ define "name" }} ... {{ end }}
 func (res *Response) RenderTemplate(templateName string, model interface{}) {
 	res.templateName = templateName
 	res.model = model
 	res.responseType = response_template
 }
 
-// Json returns model as json
+// Json send json to response
 func (res *Response) Json(model interface{}) {
 	res.model = model
 	res.responseType = response_json
 }
 
-// Redirect redirects to url
+// Redirect redirects to specified url
+// Redirect sets code 302
 func (res *Response) Redirect(url string) {
 	res.redirectUrl = url
 	res.responseType = response_redirect
 }
 
+// Send sends string to response
 func (res *Response) Send(str string) {
 	res.responseString = str
 	res.responseType = response_string

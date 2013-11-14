@@ -10,7 +10,7 @@ import (
 
 type handlerFunc func(*Request, *Response)
 
-// App recieves settings and handles http requests
+// App represents you web application, which has a settings and handlers
 type App struct {
 	craterRequestHandler *regexpHandler
 	htmlTemplates        *craterTemplate
@@ -19,6 +19,8 @@ type App struct {
 	craterRouter         *router
 }
 
+// NewApp creates a new instance of App
+// NewApp uses default settings for application. Settings can be updated using Settings method
 func NewApp() App {
 	app := App{}
 	app.craterRequestHandler = newCraterHandler()
@@ -30,16 +32,18 @@ func NewApp() App {
 	return app
 }
 
-// Settings recieves settings for application
+// Settings sets settings of application
 func (app *App) Settings(settings *Settings) {
 	app.settings.Update(settings)
 }
 
+// Use adds new middleware for your application.
+// Middleware is a handler which is called before every request
 func (app *App) Use(handler handlerFunc) {
 	app.middleware = append(app.middleware, handler)
 }
 
-// Get handles GET requests
+// Get adds a route for HTTP GET request
 func (app *App) Get(url string, handler handlerFunc) {
 	requestRegexp := app.craterRouter.normalizeRoute(url)
 	app.craterRequestHandler.handleGet(requestRegexp, func(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +51,7 @@ func (app *App) Get(url string, handler handlerFunc) {
 	})
 }
 
-// Post handles POST requests
+// Post adds a route for HTTP POST request
 func (app *App) Post(url string, handler handlerFunc) {
 	requestRegexp := app.craterRouter.normalizeRoute(url)
 	app.craterRequestHandler.handlePost(requestRegexp, func(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +59,7 @@ func (app *App) Post(url string, handler handlerFunc) {
 	})
 }
 
-// Put handles PUT requests
+// Put adds a route for HTTP PUT request
 func (app *App) Put(url string, handler handlerFunc) {
 	requestRegexp := app.craterRouter.normalizeRoute(url)
 	app.craterRequestHandler.handlePut(requestRegexp, func(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +67,7 @@ func (app *App) Put(url string, handler handlerFunc) {
 	})
 }
 
-// Delete handles DELETE requests
+// Delete adds a route for HTTP DELETE request
 func (app *App) Delete(url string, handler handlerFunc) {
 	requestRegexp := app.craterRouter.normalizeRoute(url)
 	app.craterRequestHandler.handleDelete(requestRegexp, func(w http.ResponseWriter, r *http.Request) {
@@ -72,6 +76,7 @@ func (app *App) Delete(url string, handler handlerFunc) {
 }
 
 // NotFound overrides 404 status result
+// NotFound handler will be called when no routes match request url
 func (app *App) NotFound(handler handlerFunc) {
 	app.craterRequestHandler.notFoundHandler = func(w http.ResponseWriter, r *http.Request) {
 		req := newRequest(r, make(map[string]string))
@@ -82,11 +87,13 @@ func (app *App) NotFound(handler handlerFunc) {
 	}
 }
 
-// Static handles Statis Content
+// Static handles Static files (js, css, images)
 func (app *App) Static(url string) {
 	app.craterRequestHandler.handleStatic(regexp.MustCompile("^"+url), url, http.Dir(app.settings.StaticPath))
 }
 
+// Listen listens on the TCP network address and then
+// calls handler corresponding the request url to handle requests on incoming connections.
 func (app *App) Listen(serverURL string) {
 	err := app.htmlTemplates.parseFolder(app.settings.ViewsPath, app.settings.ViewExtension)
 	if err != nil {

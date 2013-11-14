@@ -14,7 +14,7 @@ func Test_init(t *testing.T) {
 	if req == nil {
 		t.Error("newRequest returns nil")
 	}
-	if req.RouteVars == nil {
+	if req.RouteParams == nil {
 		t.Error("RouteVars was not set")
 	}
 }

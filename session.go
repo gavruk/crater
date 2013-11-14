@@ -4,10 +4,6 @@ import (
 	"time"
 )
 
-// -----------------
-// Session
-// -----------------
-
 // Session represents current session and its data
 type Session struct {
 	Id      string
@@ -20,9 +16,7 @@ func (session *Session) Abandon() {
 	session.store.Delete(session.Id)
 }
 
-// ------------------------
-// Session Store
-// ------------------------
+// SessionStore is an interface which allow to implement custom session store
 type SessionStore interface {
 	Get(id string) *Session
 	New(id string, session *Session)
