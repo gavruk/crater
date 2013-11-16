@@ -53,7 +53,7 @@ func TestInitSession(t *testing.T) {
 	res := newTestResponse()
 
 	manager := NewSessionManager(store, timeout)
-	session := manager.initSession(res)
+	session := manager.initSession(res, "")
 
 	header := res.Header.Get("Set-Cookie")
 	if header == "" {
