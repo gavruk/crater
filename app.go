@@ -134,7 +134,8 @@ func (app *App) sendResponse(req *Request, res *Response) {
 
 func (app *App) sendJson(w http.ResponseWriter, model interface{}) {
 	w.Header().Set("Content-Type", ct_JSON)
-	jsonObj, _ := json.Marshal(model)
+	jsonObj, err := json.Marshal(model)
+	logError(err)
 	fmt.Fprint(w, string(jsonObj))
 }
 
@@ -144,15 +145,16 @@ func (app *App) sendString(w http.ResponseWriter, str string) {
 
 func (app *App) sendTemplate(w http.ResponseWriter, model interface{}, templateName string) {
 	if templateName == "" {
-		panic("crater: TemplateName cannot be empty string")
+		logError(fmt.Errorf("crater: TemplateName cannot be empty string"))
 	}
 
-	app.htmlTemplates.render(w, templateName, model)
+	err := app.htmlTemplates.render(w, templateName, model)
+	logError(err)
 }
 
 func (app *App) sendView(w http.ResponseWriter, model interface{}, viewName string, extension string) {
 	if viewName == "" {
-		panic("crater: ViewName cannot be empty string")
+		logError(fmt.Errorf("crater: ViewName cannot be empty string"))
 	}
 
 	var filePath = path.Join(app.settings.ViewsPath, viewName+"."+extension)
@@ -161,7 +163,7 @@ func (app *App) sendView(w http.ResponseWriter, model interface{}, viewName stri
 
 func (app *App) redirect(w http.ResponseWriter, r *http.Request, url string) {
 	if url == "" {
-		panic("crater: RedirectUrl cannot be empty string")
+		logError(fmt.Errorf("crater: RedirectUrl cannot be empty string"))
 	}
 
 	http.Redirect(w, r, url, http.StatusFound)
